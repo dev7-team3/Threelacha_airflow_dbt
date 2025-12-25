@@ -101,7 +101,7 @@ def generate_request_combinations() -> List[APIRequestParams]:
 @dag(
     dag_id="raw_api1_collect_daily",
     schedule="@daily",
-    start_date=pendulum.datetime(2025, 12, 11, tz="UTC"),
+    start_date=pendulum.datetime(2025, 12, 23, tz="UTC"),
     catchup=True,
     max_active_runs=5,
     tags=["KAMIS", "api-1", "raw"],

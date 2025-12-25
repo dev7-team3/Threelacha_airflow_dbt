@@ -77,6 +77,10 @@ x-airflow-common:
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     # The following line can be used to set a custom config file, stored in the local config folder
     AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
+    # DAG-level 병렬 실행 제한
+    AIRFLOW__CORE__PARALLELISM: 8
+    AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: 2
+    AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG: 1
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/airflow/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/airflow/logs:/opt/airflow/logs
@@ -143,6 +147,10 @@ services:
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
+    environment:
+      <<: *airflow-common-env
+      AIRFLOW__SCHEDULER__MAX_TIS_PER_QUERY: 8
+      AIRFLOW__SCHEDULER__PARSING_PROCESSES: 1
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
       interval: 30s
@@ -186,6 +194,9 @@ services:
       <<: *airflow-common-env
       # Required to handle warm shutdown of the celery workers properly
       # See https://airflow.apache.org/docs/docker-stack/entrypoint.html#signal-propagation
+      AIRFLOW__CELERY__WORKER_CONCURRENCY: 2
+      AIRFLOW__CELERY__WORKER_PREFETCH_MULTIPLIER: 1
+      AIRFLOW__CELERY__WORKER_MAX_TASKS_PER_CHILD: 5
       DUMB_INIT_SETSID: "0"
     restart: always
     depends_on:
