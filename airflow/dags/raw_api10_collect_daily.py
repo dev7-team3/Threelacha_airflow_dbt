@@ -24,8 +24,8 @@ default_args = {
 
 with DAG(
     dag_id="raw_api10_collect_daily",
-    start_date=datetime(2025, 1, 1),
-    schedule="0 17 * * 1-5",  # 평일 오후 17시 test(오전 10시)
+    start_date=datetime(2025, 12, 1),
+    schedule=None,
     catchup=False,
     max_active_runs=1,
     default_args=default_args,
@@ -33,7 +33,5 @@ with DAG(
     PythonOperator(
         task_id="collect_daily_price",
         python_callable=collect_daily_price,
-        op_kwargs={
-            "bucket": "team3-batch",
-        },
+        op_kwargs={"bucket": "team3-batch"},
     )
