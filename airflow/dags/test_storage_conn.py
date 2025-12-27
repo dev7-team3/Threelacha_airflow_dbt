@@ -32,7 +32,7 @@ def simple_storage_conn_test():
         logger = logging.getLogger(__name__)
         # 런타임에 conn_id 결정
         conn_id = get_storage_conn_id()
-        env = os.environ.get("AIRFLOW_ENV", "local")
+        env = os.environ.get("AIRFLOW_ENV", "aws")
 
         try:
             # S3Hook 초기화
