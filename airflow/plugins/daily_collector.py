@@ -9,11 +9,10 @@ from pathlib import Path
 import time
 from typing import Any
 
+from connection_utils import get_storage_conn_id
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from dotenv import load_dotenv
 import requests
-
-from airflow.dags.utils.connection_utils import get_storage_conn_id
 
 # ============================================================
 # 1. 환경 설정
