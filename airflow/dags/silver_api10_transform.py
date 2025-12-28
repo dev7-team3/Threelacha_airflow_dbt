@@ -3,11 +3,12 @@ import json
 import logging
 from typing import Any, Optional
 
-from airflow.decorators import dag, task
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from connection_utils import get_storage_conn_id
 import pandas as pd
 from preprocessing import add_date_features, fix_cd_columns, normalize_price, prepare_metadata, upload_parquet_to_s3
+
+from airflow.decorators import dag, task
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 
 @dag(

@@ -5,14 +5,15 @@ dbt 모델을 실행하여 Gold 레이어 데이터 마트 생성
 
 import logging
 
-from airflow.providers.amazon.aws.operators.athena import AthenaOperator
-from airflow.providers.standard.operators.bash import BashOperator
-from airflow.sdk import dag, task
 from connection_utils import (
     get_athena_config,
     get_query_engine_conn_id,
 )
 import pendulum
+
+from airflow.providers.amazon.aws.operators.athena import AthenaOperator
+from airflow.providers.standard.operators.bash import BashOperator
+from airflow.sdk import dag, task
 
 logger = logging.getLogger("airflow.task")
 
