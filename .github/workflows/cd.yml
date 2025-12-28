@@ -5,40 +5,45 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
+env:
+  DEPLOY_PATH: /opt/Threelacha_airflow_dbt
+
 jobs:
   deploy:
     runs-on: self-hosted
-    
+
     steps:
       # 1. 코드 체크아웃
       - name: Checkout repository
         uses: actions/checkout@v4
-      
-      # 2. 배포 시작 시간 기록
+
+      # 2. 배포 시작 기록
       - name: Record deployment start
         run: |
           echo "================================================" | sudo tee -a /opt/deployment.log
           echo "🚀 Deployment started at $(date '+%Y-%m-%d %H:%M:%S')" | sudo tee -a /opt/deployment.log
           echo "📝 Commit: ${{ github.sha }}" | sudo tee -a /opt/deployment.log
           echo "👤 Triggered by: ${{ github.actor }}" | sudo tee -a /opt/deployment.log
-      
+
       # 3. 배포 전 백업 (최근 3개 유지)
       - name: Backup current deployment
         run: |
-          if [ -d /opt/Threelacha_airflow_dbt ]; then
-            sudo cp -r /opt/Threelacha_airflow_dbt \
-              /opt/Threelacha_airflow_dbt.backup.$(date +%Y%m%d_%H%M%S)
+          if [ -d ${{ env.DEPLOY_PATH }} ]; then
+            sudo cp -r ${{ env.DEPLOY_PATH }} \
+              ${{ env.DEPLOY_PATH }}.backup.$(date +%Y%m%d_%H%M%S)
+
             cd /opt
             sudo ls -dt Threelacha_airflow_dbt.backup.* \
               | tail -n +4 \
               | xargs -r sudo rm -rf
+
             echo "✅ Backup created" | sudo tee -a /opt/deployment.log
           fi
-      
+
       # 4. 코드 동기화
       - name: Sync code to service directory
         run: |
-          sudo mkdir -p /opt/Threelacha_airflow_dbt
+          sudo mkdir -p ${{ env.DEPLOY_PATH }}
           sudo rsync -av --delete \
             --exclude='.git' \
             --exclude='.github' \
@@ -46,67 +51,68 @@ jobs:
             --exclude='__pycache__' \
             --exclude='*.pyc' \
             --exclude='.env' \
-            ${{ github.workspace }}/ /opt/Threelacha_airflow_dbt/
-          sudo chown -R ubuntu:ubuntu /opt/Threelacha_airflow_dbt
+            ${{ github.workspace }}/ ${{ env.DEPLOY_PATH }}/
+          sudo chown -R ubuntu:ubuntu ${{ env.DEPLOY_PATH }}
           echo "✅ Code synced" | sudo tee -a /opt/deployment.log
-      
-      # 5. 환경 변수 로드 (.env는 홈 디렉토리 기준)
+
+      # 5. 환경 변수 로드
       - name: Load environment variables
         run: |
           if [ -f /home/ubuntu/.env ]; then
-            sudo cp /home/ubuntu/.env /opt/Threelacha_airflow_dbt/.env
-            sudo chown ubuntu:ubuntu /opt/Threelacha_airflow_dbt/.env
+            sudo cp /home/ubuntu/.env ${{ env.DEPLOY_PATH }}/.env
+            sudo chown ubuntu:ubuntu ${{ env.DEPLOY_PATH }}/.env
             echo "✅ .env loaded" | sudo tee -a /opt/deployment.log
           else
             echo "❌ /home/ubuntu/.env not found" | sudo tee -a /opt/deployment.log
             exit 1
           fi
-      
+
       # 6. Docker Compose 설정 검증
       - name: Validate Docker Compose configuration
-        working-directory: /opt/Threelacha_airflow_dbt
         run: |
+          cd ${{ env.DEPLOY_PATH }}
           docker compose config > /dev/null
           echo "✅ Docker Compose config validated" | sudo tee -a /opt/deployment.log
-      
-      # 7. 이미지 갱신
+
+      # 7. 이미지 갱신 (선택)
       - name: Pull latest images
-        working-directory: /opt/Threelacha_airflow_dbt
         run: |
+          cd ${{ env.DEPLOY_PATH }}
           docker compose pull || true
           echo "✅ Images pulled" | sudo tee -a /opt/deployment.log
-      
-      # 8. 서비스 재기동 (다운타임 최소화)
+
+      # 8. 서비스 재기동
       - name: Restart services
-        working-directory: /opt/Threelacha_airflow_dbt
         run: |
+          cd ${{ env.DEPLOY_PATH }}
           docker compose up -d --build
           echo "✅ Services restarted" | sudo tee -a /opt/deployment.log
-      
+
       # 9. 컨테이너 상태 확인
       - name: Verify containers
         run: |
           echo "📦 Running containers:"
           docker ps
           echo ""
-          docker compose -f /opt/Threelacha_airflow_dbt/docker-compose.yml ps
+          cd ${{ env.DEPLOY_PATH }} && docker compose ps
           echo "✅ Containers verified" | sudo tee -a /opt/deployment.log
-      
-      # 10. Airflow 헬스 체크 (3분 = 18회 × 10초)
-      - name: Health check Airflow (3 minutes)
+
+      # 10. Airflow 헬스 체크 (5분)
+      - name: Health check Airflow (5 minutes)
         run: |
-          for i in {1..18}; do
+          for i in {1..30}; do
             if curl -sf http://localhost:8080/health > /dev/null; then
               echo "✅ Airflow is healthy" | sudo tee -a /opt/deployment.log
               exit 0
             fi
-            echo "⏳ Waiting for Airflow... ($i/18)"
+            echo "⏳ Waiting for Airflow... ($i/30)"
             sleep 10
           done
-          echo "❌ Airflow health check failed after 3 minutes" | sudo tee -a /opt/deployment.log
-          docker compose -f /opt/Threelacha_airflow_dbt/docker-compose.yml logs --tail=50
+
+          echo "❌ Airflow health check failed after 5 minutes" | sudo tee -a /opt/deployment.log
+          cd ${{ env.DEPLOY_PATH }} && docker compose logs --tail=50
           exit 1
-      
+
       # 11. 배포 성공 기록
       - name: Record deployment success
         if: success()
@@ -114,29 +120,31 @@ jobs:
           echo "✅ Deployment completed successfully at $(date '+%Y-%m-%d %H:%M:%S')" | sudo tee -a /opt/deployment.log
           echo "================================================" | sudo tee -a /opt/deployment.log
           echo "" | sudo tee -a /opt/deployment.log
-      
+
       # 12. 실패 시 롤백
       - name: Rollback on failure
         if: failure()
         run: |
           echo "❌ Deployment failed at $(date '+%Y-%m-%d %H:%M:%S')" | sudo tee -a /opt/deployment.log
           echo "🔄 Rolling back..." | sudo tee -a /opt/deployment.log
-          LATEST_BACKUP=$(ls -dt /opt/Threelacha_airflow_dbt.backup.* 2>/dev/null | head -n 1)
+
+          LATEST_BACKUP=$(ls -dt ${{ env.DEPLOY_PATH }}.backup.* 2>/dev/null | head -n 1)
           if [ -n "$LATEST_BACKUP" ]; then
-            sudo rm -rf /opt/Threelacha_airflow_dbt
-            sudo cp -r "$LATEST_BACKUP" /opt/Threelacha_airflow_dbt
-            cd /opt/Threelacha_airflow_dbt
+            sudo rm -rf ${{ env.DEPLOY_PATH }}
+            sudo cp -r "$LATEST_BACKUP" ${{ env.DEPLOY_PATH }}
+            cd ${{ env.DEPLOY_PATH }}
             docker compose up -d
             echo "✅ Rolled back to $LATEST_BACKUP" | sudo tee -a /opt/deployment.log
           else
             echo "⚠️ No backup available" | sudo tee -a /opt/deployment.log
           fi
+
           echo "================================================" | sudo tee -a /opt/deployment.log
           echo "" | sudo tee -a /opt/deployment.log
-      
+
       # 13. 항상 최근 로그 출력
       - name: Show recent logs
         if: always()
         run: |
           echo "📝 Recent container logs:"
-          docker compose -f /opt/Threelacha_airflow_dbt/docker-compose.yml logs --tail=30
+          cd ${{ env.DEPLOY_PATH }} && docker compose logs --tail=30
