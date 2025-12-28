@@ -1,7 +1,9 @@
 name: CD Runner Test
 
 on:
-  workflow_dispatch:   # 수동 실행
+  workflow_dispatch:
+  push:
+  branches: [ "dev" ] 
 
 jobs:
   test-self-hosted:
