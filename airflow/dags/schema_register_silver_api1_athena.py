@@ -1,10 +1,9 @@
 import logging
 
-from connection_utils import get_athena_config, get_query_engine_conn_id
-import pendulum
-
 from airflow.providers.amazon.aws.operators.athena import AthenaOperator
 from airflow.sdk import dag, task
+from connection_utils import get_athena_config, get_query_engine_conn_id
+import pendulum
 
 logger = logging.getLogger("airflow.task")
 

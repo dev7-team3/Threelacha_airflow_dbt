@@ -1,7 +1,8 @@
 from datetime import datetime
 
-from airflow import DAG
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+
+from airflow import DAG
 
 with DAG(
     dag_id="schema_bootstrap_all",

@@ -5,14 +5,13 @@ import logging
 import re
 from typing import Any, Dict, List, Optional
 
+from airflow.exceptions import AirflowSkipException
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.sdk import dag, task
 from connection_utils import get_storage_conn_id
 import numpy as np
 import pandas as pd
 import pendulum
-
-from airflow.exceptions import AirflowSkipException
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-from airflow.sdk import dag, task
 
 logger = logging.getLogger("airflow.task")
 

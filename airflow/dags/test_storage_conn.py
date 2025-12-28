@@ -2,11 +2,10 @@ import logging
 import os
 from typing import Any, Dict
 
-from connection_utils import get_storage_conn_id
-import pendulum
-
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.sdk import dag, task
+from connection_utils import get_storage_conn_id
+import pendulum
 
 
 @dag(

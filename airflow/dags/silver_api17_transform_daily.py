@@ -5,14 +5,14 @@ import logging
 from pathlib import Path
 import re
 
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.providers.standard.operators.python import PythonOperator
 from connection_utils import get_storage_conn_id
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
 from airflow import DAG
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-from airflow.providers.standard.operators.python import PythonOperator
 
 logger = logging.getLogger(__name__)
 

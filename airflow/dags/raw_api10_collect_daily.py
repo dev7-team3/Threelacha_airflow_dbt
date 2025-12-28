@@ -1,10 +1,10 @@
 from datetime import datetime
 import logging
 
+from airflow.providers.standard.operators.python import PythonOperator
 from daily_collector import collect_daily_price
 
 from airflow import DAG
-from airflow.providers.standard.operators.python import PythonOperator
 
 logger = logging.getLogger(__name__)
 

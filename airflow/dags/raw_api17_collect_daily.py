@@ -4,13 +4,12 @@ import logging
 import os
 from pathlib import Path
 
-from connection_utils import get_storage_conn_id
-import dotenv
-import requests
-
 from airflow.models.dag import DAG
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.standard.operators.python import PythonOperator
+from connection_utils import get_storage_conn_id
+import dotenv
+import requests
 
 dotenv.load_dotenv()
 

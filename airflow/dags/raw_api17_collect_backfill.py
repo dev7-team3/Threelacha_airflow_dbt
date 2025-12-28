@@ -3,13 +3,13 @@ import json
 import os
 from pathlib import Path
 
+from airflow.operators.python import PythonOperator
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from connection_utils import get_storage_conn_id
 import dotenv
 import requests
 
 from airflow import DAG
-from airflow.operators.python import PythonOperator
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 dotenv.load_dotenv()
 

@@ -11,10 +11,9 @@ Silver API1 테이블을 Hive Metastore에 등록하는 DAG
 3. 데이터 추가 시: 파티션 동기화만 실행
 """
 
-import pendulum
-
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.sdk import dag
+import pendulum
 
 
 @dag(

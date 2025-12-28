@@ -5,9 +5,8 @@
 import io
 import logging
 
-import pandas as pd
-
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
