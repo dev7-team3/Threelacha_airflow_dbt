@@ -101,7 +101,7 @@ jobs:
       - name: Health check Airflow (5 minutes)
         run: |
           for i in {1..30}; do
-            if curl -sf http://localhost:8080/health > /dev/null; then
+            if curl -sf http://localhost:8080/api/v2/monitor/health > /dev/null; then
               echo "✅ Airflow is healthy" | sudo tee -a /opt/deployment.log
               exit 0
             fi
