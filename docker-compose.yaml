@@ -89,7 +89,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/dbt:/opt/airflow/dbt
     - /var/run/docker.sock:/var/run/docker.sock
 
-  user: "${AIRFLOW_UID:-50000}:0"
+  user: "${AIRFLOW_UID:-1000}:0"
   depends_on:
     &airflow-common-depends-on
     redis:
@@ -350,13 +350,17 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
-  # dbt:
-  #   build: ./dbt
-  #   platform: linux/amd64
-  #   container_name: dbt
-  #   volumes:
-  #     - ./dbt:/usr/app
-  #   working_dir: /usr/app
+  dbt:
+    build: ./dbt
+    platform: linux/amd64
+    container_name: dbt
+    volumes:
+      - ./dbt:/usr/app
+      - ./dbt/logs:/usr/app/logs
+      - ./dbt/target:/usr/app/target
+    working_dir: /usr/app
+    environment:
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
 
 volumes:
   postgres-db-volume:

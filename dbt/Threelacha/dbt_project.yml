@@ -1,0 +1,33 @@
+name: 'Threelacha'
+version: '1.0.0'
+
+profile: 'Threelacha'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  Threelacha:
+    example:
+      +enabled: false
+    
+    gold:
+      +materialized: table
+      +file_format: parquet
+      +write_compression: snappy
+      # 필요시 파티션 설정 예시
+      # +partitioned_by: ['year', 'month']
+    
+    # staging:
+    #   +materialized: view
+    
+    # intermediate:
+    #   +materialized: ephemeral

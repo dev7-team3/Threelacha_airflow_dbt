@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: silver
+    description: "Silver layer - 1차 정제된 원천 데이터"
+    database: awsdatacatalog
+    schema: team3_silver
+    tables:
+      - name: api1
+        description: "API-1 silver 데이터 (KAMIS)"
+      - name: api17
+        description: "API-17 silver 데이터 (KAMIS)"
