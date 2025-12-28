@@ -26,6 +26,7 @@ CONNECTION_CONFIG = {
 # -------------------------------------------------------------------------
 DEFAULT_ENV = "aws"
 
+
 def get_current_env() -> str:
     """
     현재 Airflow 환경을 반환합니다.
@@ -38,10 +39,7 @@ def get_current_env() -> str:
 # -------------------------------------------------------------------------
 # Connection Resolver
 # -------------------------------------------------------------------------
-def get_connection_id(
-    conn_type: Literal["storage", "query_engine"],
-    log_info: bool = True
-) -> str:
+def get_connection_id(conn_type: Literal["storage", "query_engine"], log_info: bool = True) -> str:
     """
     환경에 따른 적절한 connection ID를 반환합니다.
     Args:
@@ -55,17 +53,11 @@ def get_connection_id(
     env = get_current_env()
 
     if env not in CONNECTION_CONFIG:
-        logger.warning(
-            f"알 수 없는 환경 '{env}'이 감지되었습니다. "
-            f"기본 환경 '{DEFAULT_ENV}'을 사용합니다."
-        )
+        logger.warning(f"알 수 없는 환경 '{env}'이 감지되었습니다. 기본 환경 '{DEFAULT_ENV}'을 사용합니다.")
         env = DEFAULT_ENV
 
     if conn_type not in CONNECTION_CONFIG[env]:
-        raise ValueError(
-            f"잘못된 연결 타입: '{conn_type}'. "
-            f"가능한 값: {list(CONNECTION_CONFIG[env].keys())}"
-        )
+        raise ValueError(f"잘못된 연결 타입: '{conn_type}'. 가능한 값: {list(CONNECTION_CONFIG[env].keys())}")
 
     conn_id = CONNECTION_CONFIG[env][conn_type]
 

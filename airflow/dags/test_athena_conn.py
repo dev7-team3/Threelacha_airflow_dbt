@@ -19,7 +19,6 @@ import pendulum
     tags=["test", "athena", "query_engine"],
 )
 def verify_athena_registration():
-
     @task
     def check_registered_tables() -> Dict[str, Any]:
         logger = logging.getLogger(__name__)
@@ -37,14 +36,14 @@ def verify_athena_registration():
         exec_id = hook.run_query(
             query=list_query,
             result_configuration={},  # AthenaHook 필수 인자
-            query_context={'Database': database},
-            workgroup=workgroup
+            query_context={"Database": database},
+            workgroup=workgroup,
         )
         hook.poll_query_status(exec_id)
 
         list_results = hook.get_query_results(exec_id)
-        rows = list_results.get('ResultSet', {}).get('Rows', [])
-        tables = [row['Data'][0].get('VarCharValue') for row in rows if row['Data'][0]]
+        rows = list_results.get("ResultSet", {}).get("Rows", [])
+        tables = [row["Data"][0].get("VarCharValue") for row in rows if row["Data"][0]]
 
         logger.info(f"✅ 발견된 테이블 목록: {tables}")
 
@@ -59,13 +58,13 @@ def verify_athena_registration():
             d_exec_id = hook.run_query(
                 query=desc_query,
                 result_configuration={},  # AthenaHook 필수 인자
-                query_context={'Database': database},
-                workgroup=workgroup
+                query_context={"Database": database},
+                workgroup=workgroup,
             )
             hook.poll_query_status(d_exec_id)
 
             desc_results = hook.get_query_results(d_exec_id)
-            col_count = len(desc_results.get('ResultSet', {}).get('Rows', []))
+            col_count = len(desc_results.get("ResultSet", {}).get("Rows", []))
 
             verification_details[table] = {"column_count": col_count, "status": "Healthy"}
             logger.info(f"   👉 테이블 '{table}': {col_count}개 컬럼 감지")
@@ -73,9 +72,10 @@ def verify_athena_registration():
         return {
             "summary": {"database": database, "total_tables": len(tables)},
             "registered_tables": tables,
-            "details": verification_details
+            "details": verification_details,
         }
 
     check_registered_tables()
+
 
 verify_athena_registration()

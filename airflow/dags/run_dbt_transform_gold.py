@@ -58,10 +58,7 @@ def dbt_transform_gold():
     # ---------------------------------------------------------------------
     dbt_run = BashOperator(
         task_id="dbt_run",
-        bash_command=(
-            'docker exec dbt bash -c '
-            '"cd /usr/app/Threelacha && dbt run"'
-        ),
+        bash_command=('docker exec dbt bash -c "cd /usr/app/Threelacha && dbt run"'),
         do_xcom_push=True,
     )
 

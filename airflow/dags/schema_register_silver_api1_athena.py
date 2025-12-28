@@ -50,7 +50,7 @@ def register_silver_api1_athena():
         query="CREATE DATABASE IF NOT EXISTS team3_silver COMMENT 'Silver layer for team3'",
         database="default",
         workgroup=workgroup,
-        output_location="s3://team3-batch/gold/athena-results/"
+        output_location="s3://team3-batch/gold/athena-results/",
     )
 
     # 2. 기존 테이블 삭제
@@ -60,7 +60,7 @@ def register_silver_api1_athena():
         query="DROP TABLE IF EXISTS team3_silver.api1",
         database="team3_silver",
         workgroup=workgroup,
-        output_location="s3://team3-batch/gold/athena-results/"
+        output_location="s3://team3-batch/gold/athena-results/",
     )
 
     # 3. Silver API1 테이블 생성
@@ -110,7 +110,7 @@ def register_silver_api1_athena():
         """,
         database="team3_silver",
         workgroup=workgroup,
-        output_location="s3://team3-batch/gold/athena-results/"
+        output_location="s3://team3-batch/gold/athena-results/",
     )
 
     # 4. 파티션 동기화
@@ -120,7 +120,7 @@ def register_silver_api1_athena():
         query="MSCK REPAIR TABLE team3_silver.api1",
         database="team3_silver",
         workgroup=workgroup,
-        output_location="s3://team3-batch/gold/athena-results/"
+        output_location="s3://team3-batch/gold/athena-results/",
     )
 
     # 5. 테이블 검증
@@ -130,7 +130,7 @@ def register_silver_api1_athena():
         query="SELECT COUNT(*) as total_count, COUNT(DISTINCT year) as year_count, COUNT(DISTINCT month) as month_count FROM api1",
         database="team3_silver",
         workgroup=workgroup,
-        output_location="s3://team3-batch/gold/athena-results/"
+        output_location="s3://team3-batch/gold/athena-results/",
     )
 
     # 6. Gold 데이터베이스 생성 (dbt 사용을 위해)
@@ -140,7 +140,7 @@ def register_silver_api1_athena():
         query="CREATE DATABASE IF NOT EXISTS team3_gold COMMENT 'Gold layer for team3' LOCATION 's3://team3-batch/gold/'",
         database="default",
         workgroup=workgroup,
-        output_location="s3://team3-batch/gold/athena-results/"
+        output_location="s3://team3-batch/gold/athena-results/",
     )
 
     @task

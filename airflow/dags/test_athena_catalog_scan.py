@@ -19,7 +19,6 @@ import pendulum
     tags=["test", "athena", "catalog", "schema"],
 )
 def verify_athena_catalog():
-
     @task
     def scan_all_databases() -> Dict[str, Any]:
         logger = logging.getLogger(__name__)
@@ -46,11 +45,7 @@ def verify_athena_catalog():
 
         db_results = hook.get_query_results(db_exec_id)
         db_rows = db_results.get("ResultSet", {}).get("Rows", [])
-        databases = [
-            row["Data"][0].get("VarCharValue")
-            for row in db_rows
-            if row.get("Data")
-        ]
+        databases = [row["Data"][0].get("VarCharValue") for row in db_rows if row.get("Data")]
 
         logger.info(f"📚 발견된 Database 수: {len(databases)}")
         logger.info(f"📚 Database 목록: {databases}")
@@ -74,11 +69,7 @@ def verify_athena_catalog():
 
             table_results = hook.get_query_results(t_exec_id)
             table_rows = table_results.get("ResultSet", {}).get("Rows", [])
-            tables: List[str] = [
-                row["Data"][0].get("VarCharValue")
-                for row in table_rows
-                if row.get("Data")
-            ]
+            tables: List[str] = [row["Data"][0].get("VarCharValue") for row in table_rows if row.get("Data")]
 
             logger.info(f"   📄 {db} 내 테이블 수: {len(tables)}")
 
@@ -104,9 +95,7 @@ def verify_athena_catalog():
                     "status": "Healthy",
                 }
 
-                logger.info(
-                    f"         👉 {db}.{table}: {col_count}개 컬럼 감지"
-                )
+                logger.info(f"         👉 {db}.{table}: {col_count}개 컬럼 감지")
 
             catalog_summary[db] = {
                 "table_count": len(tables),
