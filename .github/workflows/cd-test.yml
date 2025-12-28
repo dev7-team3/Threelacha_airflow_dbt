@@ -3,7 +3,7 @@ name: CD Runner Test
 on:
   workflow_dispatch:
   push:
-  branches: [ "dev" ] 
+    branches: ["dev"]
 
 jobs:
   test-self-hosted:
