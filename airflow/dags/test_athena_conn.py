@@ -4,8 +4,8 @@ from typing import Any, Dict
 from airflow.providers.amazon.aws.hooks.athena import AthenaHook
 from airflow.sdk import dag, task
 from connection_utils import (
-    get_query_engine_conn_id,
     get_athena_config,
+    get_query_engine_conn_id,
 )
 import pendulum
 
@@ -33,7 +33,7 @@ def verify_athena_registration():
         # ---------------------------------------------------------------------
         list_query = f"SHOW TABLES IN `{database}`"
         logger.info(f"🔎 실행 중인 쿼리: {list_query}")
-        
+
         exec_id = hook.run_query(
             query=list_query,
             result_configuration={},  # AthenaHook 필수 인자
@@ -41,11 +41,11 @@ def verify_athena_registration():
             workgroup=workgroup
         )
         hook.poll_query_status(exec_id)
-        
+
         list_results = hook.get_query_results(exec_id)
         rows = list_results.get('ResultSet', {}).get('Rows', [])
         tables = [row['Data'][0].get('VarCharValue') for row in rows if row['Data'][0]]
-        
+
         logger.info(f"✅ 발견된 테이블 목록: {tables}")
 
         # ---------------------------------------------------------------------
@@ -55,7 +55,7 @@ def verify_athena_registration():
         for table in tables:
             desc_query = f"DESCRIBE `{database}`.`{table}`"
             logger.info(f"   🔍 테이블 구조 확인: {table}")
-            
+
             d_exec_id = hook.run_query(
                 query=desc_query,
                 result_configuration={},  # AthenaHook 필수 인자
@@ -63,10 +63,10 @@ def verify_athena_registration():
                 workgroup=workgroup
             )
             hook.poll_query_status(d_exec_id)
-            
+
             desc_results = hook.get_query_results(d_exec_id)
             col_count = len(desc_results.get('ResultSet', {}).get('Rows', []))
-            
+
             verification_details[table] = {"column_count": col_count, "status": "Healthy"}
             logger.info(f"   👉 테이블 '{table}': {col_count}개 컬럼 감지")
 

@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import Literal, Tuple
+
 from airflow.providers.amazon.aws.hooks.athena import AthenaHook
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,6 @@ DEFAULT_ENV = "aws"
 def get_current_env() -> str:
     """
     현재 Airflow 환경을 반환합니다.
-    
     Returns:
         str: 현재 환경 ('aws' 또는 'local')
     """
@@ -44,46 +44,42 @@ def get_connection_id(
 ) -> str:
     """
     환경에 따른 적절한 connection ID를 반환합니다.
-    
     Args:
         conn_type: 연결 타입 ('storage' 또는 'query_engine')
         log_info: 로그 출력 여부 (기본값: True)
-    
     Returns:
         str: 사용할 connection ID
-        
     Raises:
         ValueError: 잘못된 conn_type이 전달된 경우
     """
     env = get_current_env()
-    
+
     if env not in CONNECTION_CONFIG:
         logger.warning(
             f"알 수 없는 환경 '{env}'이 감지되었습니다. "
             f"기본 환경 '{DEFAULT_ENV}'을 사용합니다."
         )
         env = DEFAULT_ENV
-    
+
     if conn_type not in CONNECTION_CONFIG[env]:
         raise ValueError(
             f"잘못된 연결 타입: '{conn_type}'. "
             f"가능한 값: {list(CONNECTION_CONFIG[env].keys())}"
         )
-    
+
     conn_id = CONNECTION_CONFIG[env][conn_type]
-    
+
     if log_info:
         logger.info(f"   - 환경: {env}")
         logger.info(f"   - 연결 타입: {conn_type}")
         logger.info(f"   - Connection ID: {conn_id}")
-    
+
     return conn_id
 
 
 def get_storage_conn_id() -> str:
     """
     환경에 따른 적절한 storage connection ID를 반환합니다.
-    
     Returns:
         str: 사용할 storage connection ID
     """
@@ -93,7 +89,6 @@ def get_storage_conn_id() -> str:
 def get_query_engine_conn_id() -> str:
     """
     환경에 따른 적절한 query engine connection ID를 반환합니다.
-    
     Returns:
         str: 사용할 query engine connection ID
     """
@@ -106,10 +101,8 @@ def get_query_engine_conn_id() -> str:
 def get_athena_config(conn_id: str = "athena_conn") -> Tuple[str, str]:
     """
     Athena Connection Extra에서 database / work_group 추출
-    
     Args:
         conn_id: query engine connection ID
-
     Returns:
         Tuple[str, str]: (database, work_group)
     """

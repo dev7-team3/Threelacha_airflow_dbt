@@ -4,8 +4,8 @@ from typing import Any, Dict, List
 from airflow.providers.amazon.aws.hooks.athena import AthenaHook
 from airflow.sdk import dag, task
 from connection_utils import (
-    get_query_engine_conn_id,
     get_athena_config,
+    get_query_engine_conn_id,
 )
 import pendulum
 
