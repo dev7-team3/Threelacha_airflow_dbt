@@ -1,0 +1,163 @@
+name: CI (Airflow + dbt)
+
+on:
+  pull_request:
+    branches: ["main", "dev"]
+  push:
+    branches: ["dev"]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    
+    env:
+      # -------------------------------------------------
+      # Airflow (CI 최소 구성)
+      # -------------------------------------------------
+      AIRFLOW_HOME: /tmp/airflow
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////tmp/airflow/airflow.db
+      AIRFLOW__CORE__DAGS_FOLDER: ${{ github.workspace }}/airflow/dags
+    
+    steps:
+      # -------------------------------------------------
+      # 1. Checkout
+      # -------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # -------------------------------------------------
+      # 2. uv 설치
+      # -------------------------------------------------
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      
+      # -------------------------------------------------
+      # 3. Python 설치 (pyproject 기준)
+      # -------------------------------------------------
+      - name: Install Python
+        run: uv python install 3.11
+      
+      # -------------------------------------------------
+      # 4. 의존성 동기화 (lock 고정)
+      # -------------------------------------------------
+      - name: Sync dependencies
+        run: uv sync --frozen
+      
+      # -------------------------------------------------
+      # 5. Ruff lint
+      # -------------------------------------------------
+      - name: Ruff lint
+        run: |
+          echo "🔍 Running ruff lint..."
+          uv run ruff check .
+      
+      # -------------------------------------------------
+      # 6. Ruff format check (optional)
+      # -------------------------------------------------
+      - name: Ruff format check
+        run: |
+          echo "🎨 Checking code formatting..."
+          uv run ruff format --check .
+        continue-on-error: true
+      
+      # -------------------------------------------------
+      # 7. Airflow DB 초기화
+      # -------------------------------------------------
+      - name: Init Airflow DB
+        run: |
+          echo "🗄️ Initializing Airflow database..."
+          mkdir -p "$AIRFLOW_HOME"
+          uv run airflow db migrate
+      
+      # -------------------------------------------------
+      # 8. Airflow DAG validation
+      # -------------------------------------------------
+      - name: Airflow DAG validation
+        run: |
+          echo "📋 Validating Airflow DAGs..."
+          
+          # DAG 직렬화
+          uv run airflow dags reserialize
+          
+          # Import 에러 체크
+          echo "Checking for import errors..."
+          ERRORS=$(uv run airflow dags list-import-errors)
+          
+          if echo "$ERRORS" | grep -q "BROKEN DAG"; then
+            echo "❌ Found DAG import errors:"
+            echo "$ERRORS"
+            exit 1
+          fi
+          
+          echo "✅ All DAGs validated successfully"
+          echo ""
+          echo "Available DAGs:"
+          uv run airflow dags list
+      
+      # -------------------------------------------------
+      # 9. dbt deps (if packages.yml exists)
+      # -------------------------------------------------
+      - name: dbt deps
+        run: |
+          if [ -f dbt/Threelacha/packages.yml ]; then
+            echo "📦 Installing dbt packages..."
+            uv run dbt deps \
+              --project-dir dbt/Threelacha \
+              --profiles-dir dbt/Threelacha
+          else
+            echo "⏭️ No packages.yml found, skipping dbt deps"
+          fi
+      
+      # -------------------------------------------------
+      # 10. dbt compile
+      # -------------------------------------------------
+      - name: dbt compile
+        run: |
+          echo "🔨 Compiling dbt models..."
+          uv run dbt compile \
+            --project-dir dbt/Threelacha \
+            --profiles-dir dbt/Threelacha
+          
+          echo "✅ dbt compile succeeded"
+      
+      # -------------------------------------------------
+      # 11. dbt parse (syntax check only)
+      # -------------------------------------------------
+      - name: dbt parse
+        run: |
+          echo "📝 Parsing dbt project..."
+          uv run dbt parse \
+            --project-dir dbt/Threelacha \
+            --profiles-dir dbt/Threelacha
+        continue-on-error: true
+      
+      # -------------------------------------------------
+      # 12. CI Summary
+      # -------------------------------------------------
+      - name: CI Summary
+        if: always()
+        run: |
+          echo "## 🎯 CI Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "### ✅ All checks passed!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ Some checks failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Completed checks:**" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔍 Ruff lint" >> $GITHUB_STEP_SUMMARY
+          echo "- 🌊 Airflow DAG validation" >> $GITHUB_STEP_SUMMARY
+          echo "- 🦆 dbt compile (DuckDB)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Python: 3.11 (via uv)" >> $GITHUB_STEP_SUMMARY
+          echo "- Branch: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
