@@ -21,4 +21,4 @@ SELECT
     prev_1y_dt,prev_1y_pr,
     dt
 FROM {{ source('silver', 'api10') }}
-WHERE dt = '{{ macros.get_max_partition("silver", "api10", "dt") }}'
+WHERE dt = (SELECT max(dt) FROM {{ source('silver', 'api10') }})
