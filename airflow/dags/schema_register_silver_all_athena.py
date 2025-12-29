@@ -1,11 +1,10 @@
 import logging
 from pathlib import Path
 
-from connection_utils import get_athena_config, get_query_engine_conn_id
-import pendulum
-
 from airflow.providers.amazon.aws.operators.athena import AthenaOperator
 from airflow.sdk import TaskGroup, dag
+from connection_utils import get_athena_config, get_query_engine_conn_id
+import pendulum
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
