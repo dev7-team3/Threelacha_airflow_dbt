@@ -26,7 +26,6 @@ dependencies = [
 
     # dbt (CI compile 용도)
     "dbt-core>=1.7.0",
-    "dbt-duckdb>=1.7.0",
 
     # Dev / Tooling
     "ruff>=0.4.0",

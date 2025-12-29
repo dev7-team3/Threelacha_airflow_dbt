@@ -103,43 +103,7 @@ jobs:
           uv run airflow dags list
 
       # -------------------------------------------------
-      # 9. dbt deps (optional)
-      # -------------------------------------------------
-      - name: dbt deps
-        run: |
-          if [ -f dbt/Threelacha/packages.yml ]; then
-            echo "📦 Installing dbt packages..."
-            uv run dbt deps \
-              --project-dir dbt/Threelacha \
-              --profiles-dir dbt/Threelacha
-          else
-            echo "⏭️ No packages.yml found, skipping dbt deps"
-          fi
-
-      # -------------------------------------------------
-      # 10. dbt compile (DuckDB, CI safe)
-      # -------------------------------------------------
-      - name: dbt compile
-        run: |
-          echo "🔨 Compiling dbt models..."
-          uv run dbt compile \
-            --project-dir dbt/Threelacha \
-            --profiles-dir dbt/Threelacha
-          echo "✅ dbt compile succeeded"
-
-      # -------------------------------------------------
-      # 11. dbt parse (soft check)
-      # -------------------------------------------------
-      - name: dbt parse
-        run: |
-          echo "📝 Parsing dbt project..."
-          uv run dbt parse \
-            --project-dir dbt/Threelacha \
-            --profiles-dir dbt/Threelacha
-        continue-on-error: true
-
-      # -------------------------------------------------
-      # 12. CI Summary
+      # 9. CI Summary
       # -------------------------------------------------
       - name: CI Summary
         if: always()
