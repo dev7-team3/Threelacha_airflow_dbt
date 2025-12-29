@@ -30,8 +30,9 @@ CREATE EXTERNAL TABLE IF NOT EXISTS {{ params.database }}.{{ params.table }} (
 COMMENT 'KAMIS Silver 레이어 데이터'
 PARTITIONED BY (
     year STRING COMMENT '연도',
-    month STRING COMMENT '월'
+    month STRING COMMENT '월',
+    dt STRING COMMENT '일'
 )
 STORED AS PARQUET
-LOCATION '{{ params.location }}'
+LOCATION 's3a://team3-batch/silver/api-10/main'
 TBLPROPERTIES ('parquet.compress'='SNAPPY');

@@ -18,7 +18,7 @@ with DAG(
     "master_api10_pipeline",
     default_args=default_args,
     start_date=datetime(2025, 12, 1),
-    schedule="00 11 * * *",  # "0 20 * * 1-5", UTC 기준
+    schedule="0 1 * * *",  # "0 20 * * 1-5", UTC 기준
     catchup=False,
     max_active_runs=1,
 ) as dag:

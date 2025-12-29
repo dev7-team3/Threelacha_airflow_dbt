@@ -136,7 +136,7 @@ def upload_parquet_to_s3(
     DataFrame을 Parquet으로 변환하여 S3(MinIO)에 업로드한다.
 
     디렉토리 구조:
-        s3://{bucket}/{base_prefix}/year={year}/month={month}/data_{dt}.parquet
+        s3://{bucket}/{base_prefix}/year={year}/month={month}/dt={dt}/data.parquet
 
     Args:
         df (pd.DataFrame): 업로드할 데이터프레임 (year, month, res_dt 컬럼 포함).
@@ -154,7 +154,7 @@ def upload_parquet_to_s3(
     dt = res_dt.replace("-", "")
 
     # 업로드 경로 생성
-    key = f"{base_prefix}/year={year}/month={month}/data_{dt}.parquet"
+    key = f"{base_prefix}/year={year}/month={month}/dt={dt}/data.parquet"
 
     # DataFrame → Parquet 변환 (메모리 버퍼 사용)
     buffer = io.BytesIO()
