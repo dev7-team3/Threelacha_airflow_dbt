@@ -8,5 +8,9 @@ sources:
     tables:
       - name: api1
         description: "API-1 silver 데이터 (KAMIS)"
+      - name: api10
+        description: "API-10 silver 데이터 (KAMIS)"
+      - name: api13
+        description: "API-13 silver 데이터 (KAMIS)"
       - name: api17
         description: "API-17 silver 데이터 (KAMIS)"
