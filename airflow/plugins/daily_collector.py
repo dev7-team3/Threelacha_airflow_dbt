@@ -139,7 +139,7 @@ def collect_daily_price(
     *,
     bucket: str,
     country_code_file: str = "plugins/retail_country_code.json",
-    base_prefix: str = "raw/api-10-test4",
+    base_prefix: str = "raw/api-10",
 ) -> None:
     """
     지역별 소매 가격 데이터를 수집하여 S3에 저장
