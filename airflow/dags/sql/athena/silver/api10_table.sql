@@ -34,5 +34,5 @@ PARTITIONED BY (
     dt STRING COMMENT '일'
 )
 STORED AS PARQUET
-LOCATION 's3a://team3-batch/silver/api-10/main'
+LOCATION 's3://team3-batch/silver/api-10/main'
 TBLPROPERTIES ('parquet.compress'='SNAPPY');
