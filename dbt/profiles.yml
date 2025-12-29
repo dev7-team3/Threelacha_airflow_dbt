@@ -1,0 +1,16 @@
+Threelacha:
+  target: dev
+  outputs:
+    dev:
+      type: athena
+      region_name: "{{ env_var('AWS_DEFAULT_REGION', 'ap-northeast-2') }}"
+      database: "awsdatacatalog"  # Athena Data Catalog
+      schema: "team3_gold"         # Gold 데이터베이스
+      work_group: "team3-wg"
+      s3_staging_dir: "s3://team3-batch/gold/dbt-staging/"  # dbt 쿼리 결과 (분리 권장)
+      s3_data_dir: "s3://team3-batch/gold/"                 # dbt 테이블 데이터
+      threads: 4
+      
+      # bind_by_name: false
+      # check_athena_setup: false  # 실행 전 권한/설정 체크 과정을 스킵합니다.
+      
