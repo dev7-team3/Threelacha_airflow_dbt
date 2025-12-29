@@ -1,0 +1,33 @@
+fail_fast: true
+# 첫 번째 훅이 실패하면 이후 훅은 실행하지 않음
+# → 빠른 피드백, 커밋 지연 최소화
+
+repos:
+  # ==================================================
+  # Ruff: Lint + Format (Airflow 코드만)
+  # ==================================================
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.10  # pyproject.toml의 ruff 버전과 큰 차이 없게 유지
+    hooks:
+      # ----------------------------------------------
+      # 1) Ruff Lint (자동 수정 허용, 재커밋 강제)
+      # ----------------------------------------------
+      - id: ruff
+        name: ruff-lint (airflow)
+        args:
+          - --fix
+          - --exit-non-zero-on-fix
+        files: ^airflow/
+        exclude: |
+          airflow/logs/
+        stages: [commit]
+
+      # ----------------------------------------------
+      # 2) Ruff Format (Black 대체)
+      # ----------------------------------------------
+      - id: ruff-format
+        name: ruff-format (airflow)
+        files: ^airflow/
+        exclude: |
+          airflow/logs/
+        stages: [commit]

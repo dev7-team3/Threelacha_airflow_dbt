@@ -9,8 +9,8 @@ from airflow.providers.amazon.aws.operators.athena import AthenaOperator
 from airflow.providers.standard.operators.bash import BashOperator
 from airflow.sdk import dag, task
 from connection_utils import (
-    get_query_engine_conn_id,
     get_athena_config,
+    get_query_engine_conn_id,
 )
 import pendulum
 
@@ -58,10 +58,7 @@ def dbt_transform_gold():
     # ---------------------------------------------------------------------
     dbt_run = BashOperator(
         task_id="dbt_run",
-        bash_command=(
-            'docker exec dbt bash -c '
-            '"cd /usr/app/Threelacha && dbt run"'
-        ),
+        bash_command=('docker exec dbt bash -c "cd /usr/app/Threelacha && dbt run"'),
         do_xcom_push=True,
     )
 

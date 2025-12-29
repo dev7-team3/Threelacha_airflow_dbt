@@ -1,0 +1,8 @@
+# CI용 dummy profiles.yml 파일
+# 설정정보 역시 dummy로 구성
+Threelacha:
+  target: ci
+  outputs:
+    ci:
+      type: duckdb
+      path: ":memory:"

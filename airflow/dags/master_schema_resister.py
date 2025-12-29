@@ -1,8 +1,6 @@
 from datetime import datetime
 
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
-from airflow.utils.trigger_rule import TriggerRule
-import pendulum
 
 from airflow import DAG
 
@@ -13,7 +11,6 @@ with DAG(
     catchup=False,
     tags=["schema", "metastore", "bootstrap"],
 ) as dag:
-
     trigger_api1 = TriggerDagRunOperator(
         task_id="trigger_api1_schema",
         trigger_dag_id="schema_register_silver_api1",
@@ -34,9 +31,4 @@ with DAG(
         trigger_dag_id="schema_register_silver_api17",
     )
 
-    (
-        trigger_api1
-        >> trigger_api10
-        >> trigger_api13
-        >> trigger_api17
-    )
+    (trigger_api1 >> trigger_api10 >> trigger_api13 >> trigger_api17)
