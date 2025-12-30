@@ -14,10 +14,12 @@ CONNECTION_CONFIG = {
     "aws": {
         "storage": "s3_conn",
         "query_engine": "athena_conn",
+        "dbms": "rds_conn",
     },
     "local": {
         "storage": "minio_conn",
         "query_engine": "trino_conn",
+        "dbms": None,  # 추후 업데이트 예쩡
     },
 }
 
@@ -39,11 +41,11 @@ def get_current_env() -> str:
 # -------------------------------------------------------------------------
 # Connection Resolver
 # -------------------------------------------------------------------------
-def get_connection_id(conn_type: Literal["storage", "query_engine"], log_info: bool = True) -> str:
+def get_connection_id(conn_type: Literal["storage", "query_engine", "dbms"], log_info: bool = True) -> str:
     """
     환경에 따른 적절한 connection ID를 반환합니다.
     Args:
-        conn_type: 연결 타입 ('storage' 또는 'query_engine')
+        conn_type: 연결 타입 ('storage', 'query_engine', 'dbms')
         log_info: 로그 출력 여부 (기본값: True)
     Returns:
         str: 사용할 connection ID
@@ -85,6 +87,15 @@ def get_query_engine_conn_id() -> str:
         str: 사용할 query engine connection ID
     """
     return get_connection_id("query_engine")
+
+
+def get_dbms_conn_id() -> str:
+    """
+    환경에 따른 적절한 query engine connection ID를 반환합니다.
+    Returns:
+        str: 사용할 query engine connection ID
+    """
+    return get_connection_id("dbms")
 
 
 # -------------------------------------------------------------------------
