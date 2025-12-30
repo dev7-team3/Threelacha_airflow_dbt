@@ -1,11 +1,11 @@
-FROM ghcr.io/dbt-labs/dbt-core:1.8.0
+FROM ghcr.io/dbt-labs/dbt-core:1.10.0
 
 USER root
 
 # dbt-athena 어댑터 설치 (버전 수정)
 RUN pip install --no-cache-dir \
-    'dbt-core==1.8.0' \
-    'dbt-athena-community>=1.8.1,<1.9.0' \
+    'dbt-core==1.10.0' \
+    'dbt-athena-community==1.9.4' \
     'click<8.2'
 
 # dbt 디렉토리 생성
