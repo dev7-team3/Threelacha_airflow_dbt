@@ -2,8 +2,7 @@
     materialized='table',
     file_format='parquet',
     write_compression='snappy',
-    location='s3://team3-batch/gold/api13_price_statistics_by_category/',
-    partitioned_by=['year', 'month']
+    location='s3://team3-batch/gold/api13_price_statistics_by_category/'
 ) }}
 
 SELECT 
