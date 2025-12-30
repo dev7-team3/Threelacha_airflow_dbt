@@ -16,20 +16,16 @@ SELECT
     AVG(price) as avg_price,
     MIN(price) as min_price,
     MAX(price) as max_price,
+    CAST(current_timestamp AS VARCHAR) AS created_at,
     year,
-    month,
-    CAST(current_timestamp AS VARCHAR) AS created_at
+    month
 FROM {{ ref('api13_with_market_category') }}
 WHERE price IS NOT NULL
 GROUP BY 
     res_dt,
     item_cd,
     item_nm,
+    category_nm,
     market_category,
     year,
     month
-ORDER BY 
-    res_dt DESC,
-    item_nm,
-    avg_price ASC
-
