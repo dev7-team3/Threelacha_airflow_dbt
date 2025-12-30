@@ -1,7 +1,7 @@
 {{ config(
     materialized='table',
     format='PARQUET',
-    location='s3://team3-batch/gold/test_gold/'
+    location='s3://team3-batch/gold/team3_gold/test_gold/'
 ) }}
 
 SELECT 
