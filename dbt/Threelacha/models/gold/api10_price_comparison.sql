@@ -1,8 +1,7 @@
 {{ config(
     materialized='table',
     format='PARQUET',
-    location='s3://team3-batch/gold/api10_price_comparison/',
-    partitioned_by=['dt']
+    location='s3://team3-batch/gold/api10_price_comparison/'
 ) }}
 
 SELECT
