@@ -79,7 +79,6 @@ def format_dataframe(df: pd.DataFrame, object_name: str) -> pd.DataFrame:
             return None
 
     df["res_dt"] = df.apply(parse_regday, axis=1)
-    df["res_dt"] = df["res_dt"].dt.date
 
     df["week_of_year"] = df["res_dt"].dt.isocalendar().week
     df["weekday_num"] = df["res_dt"].dt.weekday
@@ -113,6 +112,7 @@ def format_dataframe(df: pd.DataFrame, object_name: str) -> pd.DataFrame:
 
     df = df.drop(columns=["price", "yyyy", "regday", "itemname", "kindname"])
     df = df.rename(columns={"price_numeric": "price", "countyname": "county_nm", "marketname": "market_nm"})
+    df["res_dt"] = df["res_dt"].dt.date
 
     return df
 
