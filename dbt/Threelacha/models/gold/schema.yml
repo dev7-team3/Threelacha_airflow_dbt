@@ -1,0 +1,50 @@
+version: 2
+
+models:
+  - name: mart_price_rise_top3
+    columns:
+      - name: country_cd
+        tests:
+          - not_null
+
+      - name: ranking
+        tests:
+          - not_null
+
+    data_tests::
+      - price_top3:
+          country_col: country_cd
+          rank_col: ranking
+      - not_empty
+
+  - name: mart_price_drop_top3
+    columns:
+      - name: country_cd
+        tests:
+          - not_null
+
+      - name: ranking
+        tests:
+          - not_null
+
+    data_tests::
+      - price_top3:
+          country_col: country_cd
+          rank_col: ranking
+      - not_empty
+
+  - name: mart_season_region_product
+    columns:
+      - name: latitude
+        tests:
+          - not_null
+
+      - name: longitude
+        tests:
+          - not_null
+
+    data_tests::
+      - price_season:
+          present_month: present_month
+          season_month: season_month
+      - not_empty
