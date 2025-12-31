@@ -354,10 +354,17 @@ services:
     build: ./dbt
     platform: linux/amd64
     container_name: dbt
+    restart: unless-stopped
     volumes:
       - ./dbt:/usr/app
       - ./dbt/logs:/usr/app/logs
       - ./dbt/target:/usr/app/target
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+        reservations:
+          memory: 256M
     working_dir: /usr/app
     environment:
       - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
