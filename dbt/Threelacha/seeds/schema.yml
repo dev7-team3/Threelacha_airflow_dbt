@@ -1,0 +1,10 @@
+version: 2
+
+seeds:
+  - name: country_coordinates
+    config:
+      column_types:
+        country_cd: varchar
+        country_nm: varchar
+        latitude: double
+        longitude: double
