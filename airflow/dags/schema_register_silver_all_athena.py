@@ -64,8 +64,8 @@ def setup_athena_base_dag():
         output_location=ATHENA_OUTPUT_SILVER,
     )
 
-    create_metadata_db = AthenaOperator(
-        task_id="create_gold_db",
+    create_gold_metadata_db = AthenaOperator(
+        task_id="create_gold_metadata_db",
         aws_conn_id=CONN_ID,
         database="default",
         workgroup=WORKGROUP,
@@ -120,7 +120,7 @@ def setup_athena_base_dag():
 
             drop >> create >> repair
 
-        [create_silver_db, create_gold_db, create_metadata_db] >> tg
+        [create_silver_db, create_gold_db, create_gold_metadata_db] >> tg
 
 
 setup_athena_base_dag()
