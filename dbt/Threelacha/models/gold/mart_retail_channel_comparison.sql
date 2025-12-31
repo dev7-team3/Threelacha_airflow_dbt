@@ -1,7 +1,7 @@
 {{ config(
     materialized='table',
-    format='PARQUET',
-    location='s3://team3-batch/gold/api17_channel_comparison/'
+    format='PARQET',
+    location='s3://team3-batch/gold/mart_retail_channel_comparison/'
 ) }}
 
 SELECT 

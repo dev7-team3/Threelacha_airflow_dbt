@@ -233,7 +233,8 @@ def transform_raw_to_silver(**context) -> None:
         logger.error("logical_date 또는 data_interval_start를 찾을 수 없습니다.")
         logical_date = datetime.now()
 
-    target_date = (logical_date - timedelta(days=1)).strftime("%Y-%m-%d")
+    target_date_obj = logical_date - timedelta(days=1)
+    target_date = target_date_obj.strftime("%Y-%m-%d")
     year = logical_date.year
     month = logical_date.month
     month_str = f"{month:02d}"
@@ -304,7 +305,7 @@ def transform_raw_to_silver(**context) -> None:
         logger.info(f"Existing data: {len(df_existing):,} records")
 
         # 새 데이터의 날짜에 해당하는 기존 데이터 제거
-        df_existing = df_existing[df_existing["res_dt"].dt.date != target_date]
+        df_existing = df_existing[df_existing["res_dt"] != target_date_obj]
 
         # 병합
         df_combined = pd.concat([df_existing, df_new], ignore_index=True)
@@ -313,7 +314,7 @@ def transform_raw_to_silver(**context) -> None:
         df_combined = df_new
         logger.info("No existing parquet file, using new data only")
 
-    # # 컬럼 순서 정리
+    # 컬럼 순서 정리
     column_order = [
         "res_dt",
         "week_of_year",
@@ -356,12 +357,7 @@ with DAG(
     schedule="0 6 * * *",  # 매일 오전 6시 (Raw 수집 후)
     catchup=False,
     max_active_runs=1,
-    default_args={
-        "depends_on_past": False,
-        "owner": "jiyeon_kim",
-        "retries": 3,
-        "retry_delay": timedelta(minutes=5),
-    },
+    default_args={"depends_on_past": False, "owner": "jiyeon_kim"},
     tags=["silver", "transform", "api17"],
 ) as dag:
     transform_task = PythonOperator(
