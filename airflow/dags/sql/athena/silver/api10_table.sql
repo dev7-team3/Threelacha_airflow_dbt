@@ -1,5 +1,5 @@
 CREATE EXTERNAL TABLE IF NOT EXISTS {{ params.database }}.{{ params.table }} (
-    product_no DOUBLE COMMENT '산물번호',
+    product_no INTEGER COMMENT '산물번호',
     product_cls_cd STRING COMMENT '산물구분코드',
     product_cls_nm STRING COMMENT '산물구분명',
     product_cls_unit STRING COMMENT '산물구분단위',
