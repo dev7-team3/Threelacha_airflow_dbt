@@ -25,9 +25,10 @@ models:
       +write_compression: snappy
       # 필요시 파티션 설정 예시
       # +partitioned_by: ['year', 'month']
-    
-    # staging:
-    #   +materialized: view
-    
-    # intermediate:
-    #   +materialized: ephemeral
+
+seeds:
+  Threelacha:
+    seasonal_info:
+      config:
+        column_types:
+          product_no: double
