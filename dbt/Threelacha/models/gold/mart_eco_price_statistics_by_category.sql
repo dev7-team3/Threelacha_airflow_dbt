@@ -2,7 +2,8 @@
     materialized='table',
     file_format='parquet',
     write_compression='snappy',
-    location='s3://team3-batch/gold/api13_price_statistics_by_category/'
+    location='s3://team3-batch/gold/mart_eco_price_statistics_by_category/',
+    partitioned_by=['year', 'month']
 ) }}
 
 SELECT 
@@ -18,7 +19,7 @@ SELECT
     CAST(current_timestamp AS VARCHAR) AS created_at,
     year,
     month
-FROM {{ ref('api13_with_market_category') }}
+FROM {{ ref('stg_eco_data_with_market_category') }}
 WHERE price IS NOT NULL
 GROUP BY 
     res_dt,
