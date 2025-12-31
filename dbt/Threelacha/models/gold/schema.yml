@@ -48,3 +48,55 @@ models:
           present_month: present_month
           season_month: season_month
       - not_empty
+
+  - name: mart_retail_channel_comparison
+    columns:
+      - name: res_dt
+        tests:
+          - not_null
+
+      - name: record_count
+        tests:
+          - not_null
+
+      - name: avg_price
+        tests:
+          - not_null
+
+  - name: mart_retail_region_comparison
+    columns:
+      - name: res_dt
+        tests:
+          - not_null
+
+      - name: country_cd
+        tests:
+          - not_null
+
+      - name: avg_price
+        tests:
+          - not_null
+  - name: mart_eco_price_statistics_by_category
+    columns:
+      - name: res_dt
+        tests:
+          - not_null
+
+      - name: item_cd
+        tests:
+          - not_null
+
+      - name: market_category
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['전문점', '대형마트', '생협', '백화점', 'SSM', '직매장']
+
+      - name: record_count
+        tests:
+          - not_null
+
+      - name: avg_price
+        tests:
+          - not_null
+      - name: min_price

@@ -27,6 +27,6 @@ SELECT rp.*,
     si.season,
     si.month as season_month
 FROM region_product rp
-LEFT JOIN seasonal_info si
+LEFT JOIN {{ ref('seasonal_info') }} si
 ON rp.product_no = si.product_no
 AND rp.present_month = si.month

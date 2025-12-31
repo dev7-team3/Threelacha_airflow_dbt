@@ -28,6 +28,8 @@ models:
 
 seeds:
   Threelacha:
+    +schema: metadata
+    +s3_data_dir: "s3://team3-batch/metadata/"
     seasonal_info:
       config:
         +column_types:
