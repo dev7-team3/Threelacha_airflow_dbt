@@ -30,5 +30,5 @@ seeds:
   Threelacha:
     seasonal_info:
       config:
-        column_types:
+        +column_types:
           product_no: double
