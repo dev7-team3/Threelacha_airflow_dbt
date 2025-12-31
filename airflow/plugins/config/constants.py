@@ -14,6 +14,7 @@ ATHENA_OUTPUT_GOLD = f"s3://{BUCKET_NAME}/athena-query-results/gold/"
 # 데이터베이스/스키마 설정
 SILVER_DATABASE = "team3_silver"
 GOLD_DATABASE = "team3_gold"
+GOLD_METADATA_DATABASE = "team3_gold_metadata"
 MART_SCHEMA = "mart"
 
 # 테이블 설정
