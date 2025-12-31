@@ -99,4 +99,3 @@ models:
       - name: avg_price
         tests:
           - not_null
-      - name: min_price
