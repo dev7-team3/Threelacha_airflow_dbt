@@ -7,6 +7,7 @@ from config.constants import (
     ATHENA_OUTPUT_SILVER,
     BUCKET_NAME,
     GOLD_DATABASE,
+    GOLD_METADATA_DATABASE,
     SILVER_DATABASE,
     SILVER_PREFIX,
     SILVER_TABLES,
@@ -44,7 +45,7 @@ def setup_athena_base_dag():
     """
     logger.info(f"Setting up Athena schema for {len(TABLE_SPECS)} tables")
 
-    # 1. Database 생성 (Silver / Gold)
+    # 1. Database 생성 (Silver / Gold / metadata)
     create_silver_db = AthenaOperator(
         task_id="create_silver_db",
         aws_conn_id=CONN_ID,
@@ -60,6 +61,15 @@ def setup_athena_base_dag():
         database="default",
         workgroup=WORKGROUP,
         query=f"CREATE DATABASE IF NOT EXISTS {GOLD_DATABASE} COMMENT 'Gold Layer (Mart)'",
+        output_location=ATHENA_OUTPUT_SILVER,
+    )
+
+    create_metadata_db = AthenaOperator(
+        task_id="create_gold_db",
+        aws_conn_id=CONN_ID,
+        database="default",
+        workgroup=WORKGROUP,
+        query=f"CREATE DATABASE IF NOT EXISTS {GOLD_METADATA_DATABASE} COMMENT 'Gold Metadata Layer'",
         output_location=ATHENA_OUTPUT_SILVER,
     )
 
@@ -110,7 +120,7 @@ def setup_athena_base_dag():
 
             drop >> create >> repair
 
-        [create_silver_db, create_gold_db] >> tg
+        [create_silver_db, create_gold_db, create_metadata_db] >> tg
 
 
 setup_athena_base_dag()
