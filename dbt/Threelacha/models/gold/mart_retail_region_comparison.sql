@@ -1,6 +1,6 @@
 {{ config(
     materialized='table',
-    format='PARQUET',
+    format='PARQET',
     location='s3://team3-batch/gold/mart_retail_region_comparison/'
 ) }}
 

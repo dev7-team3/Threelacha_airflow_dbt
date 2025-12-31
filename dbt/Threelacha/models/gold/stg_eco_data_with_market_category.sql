@@ -2,9 +2,6 @@
     materialized='ephemeral'
 ) }}
 
--- VIEW를 생성하지 않고 임시로 사용하는 ephemeral 모델
--- 실제 VIEW나 테이블을 생성하지 않고, 참조하는 쿼리에 인라인으로 포함됨
--- market_category 컬럼 추가 용도
 SELECT 
     product_cls_cd,
     product_cls_nm,

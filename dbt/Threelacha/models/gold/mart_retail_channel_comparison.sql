@@ -1,7 +1,6 @@
 {{ config(
     materialized='table',
-    file_format='parquet',
-    write_compression='snappy',
+    format='PARQET',
     location='s3://team3-batch/gold/mart_retail_channel_comparison/'
 ) }}
 

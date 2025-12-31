@@ -357,12 +357,7 @@ with DAG(
     schedule="0 6 * * *",  # 매일 오전 6시 (Raw 수집 후)
     catchup=False,
     max_active_runs=1,
-    default_args={
-        "depends_on_past": False,
-        "owner": "jiyeon_kim",
-        "retries": 3,
-        "retry_delay": timedelta(minutes=5),
-    },
+    default_args={"depends_on_past": False, "owner": "jiyeon_kim"},
     tags=["silver", "transform", "api17"],
 ) as dag:
     transform_task = PythonOperator(
