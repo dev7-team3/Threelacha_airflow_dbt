@@ -144,7 +144,7 @@ def upload_data_to_s3(region: str, data: dict, category_row: dict, year: str) ->
         "retry_exponential_backoff": True,
         "max_retry_delay": pendulum.duration(hours=1),
     },
-    tags=["api_ingestion", "raw", "api17", "backfill"],
+    tags=["ingestion", "api17", "backfill"],
     description="KAMIS API17 연간 데이터 백필 DAG",
 )
 def raw_api17_collect_yearly():

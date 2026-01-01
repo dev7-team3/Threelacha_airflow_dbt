@@ -116,26 +116,16 @@ def format_dataframe(df: pd.DataFrame, object_name: str) -> pd.DataFrame:
 @dag(
     dag_id="silver_api17_transform_daily",
     start_date=datetime(2025, 12, 10),
-    schedule="0 6 * * *",  # 매일 오전 6시 (Raw 수집 후)
+    schedule=None,
     catchup=False,
     max_active_runs=1,
     default_args={"depends_on_past": False, "owner": "jiyeon_kim"},
-    tags=["silver", "transform", "api17"],
+    tags=["preprocessing", "api17"],
     description="KAMIS API17 Raw 데이터를 읽어 코드 매핑 및 파생 컬럼을 추가한 Silver 데이터로 변환",
 )
 def silver_api17_transform_daily():
     """
     KAMIS API17 Raw → Silver 변환 DAG
-
-    전체 파이프라인을 TaskFlow API로 구성하여 데이터 변환 프로세스를 단계별로 처리합니다.
-
-    Task 구성:
-    1. extract_date_info: Airflow 컨텍스트에서 처리할 날짜 정보 추출
-    2. list_json_files: S3에서 처리 대상 JSON 파일 목록 조회
-    3. process_json_files: JSON 파일들을 읽어서 DataFrame으로 변환 및 전처리
-    4. merge_metadata: 메타데이터와 병합하여 상품 정보 추가
-    5. merge_existing_data: 기존 Silver 데이터와 병합 (중복 제거)
-    6. upload_to_s3: 최종 데이터를 Parquet 형식으로 S3에 저장
 
     Returns:
         None

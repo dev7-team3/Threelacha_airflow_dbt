@@ -144,7 +144,7 @@ def upload_data_to_s3(
         "retries": 3,
         "retry_delay": timedelta(minutes=5),
     },
-    tags=["api_ingestion", "raw", "api17"],
+    tags=["ingestion", "api17"],
     description="KAMIS API17 소매 가격 데이터 수집 DAG",
 )
 def raw_api17_collect_daily():
