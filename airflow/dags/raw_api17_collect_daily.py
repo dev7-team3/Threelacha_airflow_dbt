@@ -8,10 +8,10 @@ from airflow.models.dag import DAG
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.standard.operators.python import PythonOperator
 from connection_utils import get_storage_conn_id
-import dotenv
+import dotenv import load_dotenv
 import requests
 
-dotenv.load_dotenv()
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ API_KEY = os.getenv("CERT_KEY")
 ID = os.getenv("CERT_ID")
 
 BUCKET_NAME = "team3-batch"
-REQUEST_URL = "https://www.kamis.or.kr/service/price/xml.do?action=periodRetailProductList"
+REQUEST_URL = os.getenv("KAMIS_BASE_URL") + "action=periodRetailProductList"
 
 with Path.open(Path(__file__).parent.parent / "plugins" / "param_tree.json", "r", encoding="utf-8") as f:
     params_tree = json.load(f)

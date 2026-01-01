@@ -1,18 +1,18 @@
 from datetime import datetime, timedelta
-from io import BytesIO
 import json
 import logging
 from pathlib import Path
 import re
-
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-from airflow.providers.standard.operators.python import PythonOperator
-from connection_utils import get_storage_conn_id
 import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 
 from airflow import DAG
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.providers.standard.operators.python import PythonOperator
+
+from connection_utils import get_storage_conn_id
+from preprocessing import add_date_features, normalize_price, prepare_metadata
+from upload_utils import upload_parquet_to_s3
+from read_utils import read_json_from_s3, read_parquet_from_s3
 
 logger = logging.getLogger(__name__)
 
@@ -80,143 +80,24 @@ def format_dataframe(df: pd.DataFrame, object_name: str) -> pd.DataFrame:
 
     df["res_dt"] = df.apply(parse_regday, axis=1)
 
-    df["week_of_year"] = df["res_dt"].dt.isocalendar().week
-    df["weekday_num"] = df["res_dt"].dt.weekday
-    df["year"] = df["res_dt"].dt.year
-    df["month"] = df["res_dt"].dt.month
+    # 날짜 파생 컬럼 추가 (preprocessing 모듈의 함수 사용)
+    df = add_date_features(df, "res_dt")
 
-    weekday_map = {
-        0: "월요일",
-        1: "화요일",
-        2: "수요일",
-        3: "목요일",
-        4: "금요일",
-        5: "토요일",
-        6: "일요일",
-    }
-    df["weekday_nm"] = df["weekday_num"].map(weekday_map)
-    df["weekend_yn"] = df["weekday_num"].isin([5, 6])
-
-    # price를 숫자로 변환 (쉼표 제거, '-' 처리)
-    if "price" in df.columns:
-
-        def clean_price(value: str | None) -> float | None:
-            if pd.isna(value) or str(value).strip() == "-" or str(value).strip() == "":
-                return None
-            try:
-                return float(str(value).strip().replace(",", ""))
-            except ValueError:
-                return None
-
-        df["price_numeric"] = df["price"].apply(clean_price)
+    df["price_numeric"] = normalize_price(df["price"])
 
     df = df.drop(columns=["price", "yyyy", "regday", "itemname", "kindname"])
     df = df.rename(columns={"price_numeric": "price", "countyname": "county_nm", "marketname": "market_nm"})
-    df["res_dt"] = df["res_dt"].dt.date
+    # res_dt는 add_date_features에서 이미 date 타입으로 변환됨
 
     return df
 
 
-def read_json_from_s3(hook: S3Hook, object_name: str) -> list | None:
-    """S3에서 JSON 파일 읽기"""
-    try:
-        response = hook.get_key(key=object_name, bucket_name=BUCKET_NAME)
-        if response is None:
-            return None
-
-        json_data = json.loads(response.get()["Body"].read().decode("utf-8"))
-
-        if len(json_data) == 0:
-            return None
-        else:
-            return json_data
-    except Exception as e:
-        logger.warning(f"Error reading {object_name}: {e}")
-        return None
-
-
-def read_parquet_from_s3(hook: S3Hook, object_name: str) -> pd.DataFrame | None:
-    """S3에서 Parquet 파일 읽기"""
-    try:
-        response = hook.get_key(key=object_name, bucket_name=BUCKET_NAME)
-        if response is None:
-            return None
-        else:
-            data = response.get()["Body"].read()
-            buffer = BytesIO(data)
-            table = pq.read_table(buffer)
-            df = table.to_pandas()
-
-            logger.info(f"✅ Read existing Parquet file: {object_name} ({len(df):,} records)")
-            return df
-    except Exception as e:
-        logger.warning(f"Error reading {object_name}: {e}")
-        return None
-
-
-def upload_parquet_to_s3(hook: S3Hook, df: pd.DataFrame, object_name: str) -> None:
-    """DataFrame을 Parquet로 변환하여 S3에 업로드"""
-    try:
-        table = pa.Table.from_pandas(df)
-        buffer = BytesIO()
-        pq.write_table(table, buffer, compression="snappy")
-        buffer.seek(0)
-
-        hook.load_bytes(
-            bytes_data=buffer.getvalue(),
-            key=object_name,
-            bucket_name=BUCKET_NAME,
-            replace=True,
-        )
-
-        logger.info(f"✅ Uploaded Parquet file: {object_name} ({len(df):,} records)")
-    except Exception as e:
-        logger.warning(f"Error uploading {object_name}: {e}")
-        raise
-
-
-def upload_csv_to_s3(hook: S3Hook, df: pd.DataFrame, object_name: str) -> None:
-    """DataFrame을 CSV로 변환하여 S3에 업로드"""
-    try:
-        buffer = BytesIO()
-        df.to_csv(buffer, index=False)
-        buffer.seek(0)
-        hook.load_bytes(
-            bytes_data=buffer.getvalue(),
-            key=object_name,
-            bucket_name=BUCKET_NAME,
-            replace=True,
-        )
-        logger.info(f"✅ Uploaded CSV file: {object_name} ({len(df):,} records)")
-    except Exception as e:
-        logger.warning(f"Error uploading {object_name}: {e}")
-        raise
-
-
-def read_csv_from_s3(hook: S3Hook, object_name: str) -> pd.DataFrame | None:
-    """S3에서 CSV 파일 읽기"""
-    try:
-        response = hook.get_key(key=object_name, bucket_name=BUCKET_NAME)
-        if response is None:
-            return None
-        return pd.read_csv(response.get()["Body"])
-    except Exception as e:
-        logger.warning(f"Error reading {object_name}: {e}")
-        return None
-
-
 def merge_dataframes(df: pd.DataFrame) -> pd.DataFrame:
     """두 개의 DataFrame을 병합"""
-    s3_client = S3Hook(aws_conn_id=S3_CONN_ID)
+    hook = S3Hook(aws_conn_id=S3_CONN_ID)
 
-    response = s3_client.get_key(key="metadata/dim_product_no.csv", bucket_name=BUCKET_NAME)
-    meta_data = pd.read_csv(BytesIO(response.get()["Body"].read()))
-
-    meta_data["product_cls_cd"] = meta_data["product_cls_cd"].astype(str).str.zfill(2)
-    meta_data["category_cd"] = meta_data["category_cd"].astype(str)
-    meta_data["item_cd"] = meta_data["item_cd"].astype(str)
-    meta_data["kind_cd"] = meta_data["kind_cd"].astype(str).str.zfill(2)
-    meta_data["rank_cd"] = meta_data["rank_cd"].astype(str).str.zfill(2)
+    response = hook.get_key(key="metadata/dim_product_no.csv", bucket_name=BUCKET_NAME)
+    meta_data = prepare_metadata(response.get()["Body"].read())
 
     df = pd.merge(df, meta_data, on=["product_cls_cd", "category_cd", "item_cd", "kind_cd", "rank_cd"], how="left")
     df = df.drop(columns=["county_nm"])
@@ -264,7 +145,7 @@ def transform_raw_to_silver(**context) -> None:
 
     for file_path in json_files:
         logger.info(f"Processing: {file_path}")
-        data = read_json_from_s3(hook, file_path)
+        data = read_json_from_s3(hook, file_path, BUCKET_NAME)
 
         if data and isinstance(data, list) and len(data) > 0:
             df = pd.DataFrame(data)
@@ -297,7 +178,7 @@ def transform_raw_to_silver(**context) -> None:
 
     # 기존 Parquet 파일 읽기
     parquet_key = f"silver/api-17/year={year}/month={month_str}/data.parquet"
-    df_existing = read_parquet_from_s3(hook, parquet_key)
+    df_existing = read_parquet_from_s3(hook, parquet_key, BUCKET_NAME)
 
     if df_existing is not None:
         # 기존 데이터와 새 데이터 병합
@@ -346,7 +227,7 @@ def transform_raw_to_silver(**context) -> None:
     df_combined = df_combined[existing_columns + remaining_columns]
 
     # Parquet로 저장
-    upload_parquet_to_s3(hook, df_combined, parquet_key)
+    upload_parquet_to_s3(hook, df_combined, parquet_key, BUCKET_NAME)
 
     logger.info(f"✅ Silver transformation completed: {target_date} -> {parquet_key}")
 
