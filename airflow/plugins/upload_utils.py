@@ -8,6 +8,22 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def upload_json_to_s3(hook: S3Hook, json_data: str, object_name: str, bucket_name: str) -> None:
+    """JSON 데이터를 S3에 업로드
+
+    Args:
+        json_data: 업로드할 JSON 데이터
+        object_name: S3 객체 키 (경로)
+        bucket_name: S3 버킷명
+    """
+    try:
+        hook.load_string(string_data=json_data, key=object_name, bucket_name=bucket_name, replace=True)
+        logger.info(f"✅ Uploaded JSON file: {object_name}")
+    except Exception as e:
+        logger.warning(f"Error uploading {object_name}: {e}")
+        raise
+
+
 def upload_csv_to_s3(hook: S3Hook, df: pd.DataFrame, object_name: str, bucket_name: str) -> None:
     """DataFrame을 CSV로 변환하여 S3에 업로드
 
