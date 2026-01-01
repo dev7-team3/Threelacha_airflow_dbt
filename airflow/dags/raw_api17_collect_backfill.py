@@ -1,18 +1,3 @@
-"""
-KAMIS API17 Raw 데이터 백필 DAG
-
-이 DAG는 KAMIS API17에서 과거 연간 데이터를 수집하여 S3 Raw 레이어에 저장합니다.
-백필(backfill) 용도로 사용되며, 수동 실행(schedule=None)으로 동작합니다.
-TaskFlow API를 사용하여 각 지역별로 병렬로 데이터를 수집합니다.
-
-처리 흐름:
-1. 각 지역(country_code)별로 독립적인 task 생성
-2. 각 task는 카테고리/품목/품종/판매코드 조합에 대해 API 호출
-3. 연간 데이터를 S3에 JSON 파일로 저장
-
-저장 경로: raw/api-17/dt=YYYY/product_cls=01/country=CODE/category=XXX/item=XXX/kind=XX/product_rank=XX/data.json
-"""
-
 from datetime import datetime
 import json
 import logging
