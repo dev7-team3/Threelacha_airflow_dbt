@@ -4,6 +4,7 @@
 
 import io
 import logging
+from typing import Any, Optional
 
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 import pandas as pd
@@ -166,3 +167,26 @@ def upload_parquet_to_s3(
     hook.load_bytes(bytes_data=buffer.getvalue(), key=key, bucket_name=bucket, replace=True)
 
     logger.info("✅ 업로드 완료: s3://%s/%s", bucket, key)
+
+
+# ============================================================
+# 기타 정제 함수
+# ============================================================
+
+
+# df 기준이 아닌 json의 record 기준 처리
+def clean_price(value: Any) -> Optional[float]:
+    """가격 데이터 정제 (쉼표 제거, 빈 값/'-' 처리)
+
+    Args:
+        value: 원본 가격 값 (예: "5,500", "-", "", None)
+
+    Returns:
+        정제된 가격 float형 (예: 5500.0) 또는 None
+    """
+    if pd.isna(value) or not str(value).strip() or str(value).strip() == "-":
+        return None
+    try:
+        return float(str(value).strip().replace(",", ""))  # "5,500" -> 5500.0
+    except ValueError:
+        return None
