@@ -1,7 +1,8 @@
 from datetime import datetime
 
-from airflow.decorators import dag
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+from airflow.decorators import dag
+
 
 # 공통 함수 정의
 def make_trigger(task_id: str, dag_id: str) -> TriggerDagRunOperator:
