@@ -4,6 +4,7 @@ from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.decorators import dag
 
 
+
 # 공통 함수 정의
 def make_trigger(task_id: str, dag_id: str) -> TriggerDagRunOperator:
     """
@@ -21,8 +22,9 @@ def make_trigger(task_id: str, dag_id: str) -> TriggerDagRunOperator:
         trigger_dag_id=dag_id,
         wait_for_completion=True,
         allowed_states=["success"],
-        failed_states=["failed"]
+        failed_states=["failed"],
     )
+
 
 @dag(
     dag_id="master_pipeline",
@@ -65,5 +67,6 @@ def master_pipeline():
 
     # --- 순차 실행 체인 ---
     (t1_raw >> t1_silver >> t10_raw >> t10_silver >> t17_raw >> t17_silver >> dbt_run >> rds_sync)
+
 
 master_pipeline()
