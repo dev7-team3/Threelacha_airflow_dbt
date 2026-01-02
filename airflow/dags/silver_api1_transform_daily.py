@@ -3,29 +3,25 @@ from io import BytesIO
 import json
 import logging
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from airflow.exceptions import AirflowSkipException
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.sdk import dag, task
+from config.constants import BUCKET_NAME
 from connection_utils import get_storage_conn_id
-import numpy as np
+from metadata_loader_utils import MetadataLoader
 import pandas as pd
 import pendulum
+from preprocessing import add_date_features, clean_price
 
 logger = logging.getLogger("airflow.task")
 
-# ---------------------------------------------------------
-# 상수 정의
-# ---------------------------------------------------------
-BUCKET_NAME = "team3-batch"
+# 연결정보
 CONN_ID = get_storage_conn_id()
 
-# ---------------------------------------------------------
-# 유틸리티 함수
-# ---------------------------------------------------------
 
-
+# 파일경로에서 메타데이터 추출
 def extract_metadata_from_path(file_path: str) -> Dict[str, str]:
     """파일 경로에서 메타데이터 추출
 
@@ -48,23 +44,6 @@ def extract_metadata_from_path(file_path: str) -> Dict[str, str]:
     }
 
 
-def clean_price(value: Any) -> Optional[float]:
-    """가격 데이터 정제 (쉼표 제거, 빈 값/'-' 처리)
-
-    Args:
-        value: 원본 가격 값 (예: "5,500", "-", "", None)
-
-    Returns:
-        정제된 가격 float형 (예: 5500.0) 또는 None
-    """
-    if pd.isna(value) or not str(value).strip() or str(value).strip() == "-":
-        return None
-    try:
-        return float(str(value).strip().replace(",", ""))  # "5,500" -> 5500.0
-    except ValueError:
-        return None
-
-
 # ---------------------------------------------------------
 # DAG 정의
 # ---------------------------------------------------------
@@ -72,15 +51,11 @@ def clean_price(value: Any) -> Optional[float]:
 
 @dag(
     dag_id="silver_api1_transform_daily",
-    schedule="0 1 * * *",
-    start_date=pendulum.datetime(2025, 12, 11, tz="UTC"),
-    catchup=True,
+    schedule=None,
+    start_date=pendulum.datetime(2025, 12, 11),
+    catchup=False,
     max_active_runs=10,
-    default_args={
-        "owner": "jungeun_park",
-        "retries": 2,
-        "retry_delay": pendulum.duration(minutes=5),
-    },
+    default_args={"owner": "jungeun_park"},
     tags=["KAMIS", "api-1", "silver", "transform"],
     description="KAMIS API1 Raw 데이터를 읽어 코드 매핑 및 파생 컬럼을 추가한 Silver 데이터로 변환",
 )
@@ -284,38 +259,15 @@ def transform_api1_raw_to_silver() -> None:
         df = pd.DataFrame(records)
         df["res_dt"] = pd.to_datetime(df["res_dt"])
 
-        # 코드 → 명칭 매핑
-        product_cls_map = {"01": "소매", "02": "도매"}
-        category_map = {
-            "100": "식량작물",
-            "200": "채소류",
-            "300": "특용작물",
-            "400": "과일류",
-            "500": "축산물",
-            "600": "수산물",
-        }
-        country_map = {
-            "1101": "서울",
-            "2100": "부산",
-            "2200": "대구",
-            "2401": "광주",
-            "2501": "대전",
-            "all": "전체지역",
-        }
+        # 코드 → 명칭 매핑 위한 json 파일 로딩
+        product_cls_map = MetadataLoader.get_product_cls_codes()
+        category_map = MetadataLoader.get_category_codes()
+        country_map = MetadataLoader.get_country_codes()
+        country_map["all"] = "전국"
 
         df["product_cls_nm"] = df["product_cls_cd"].map(product_cls_map).fillna("미분류")
         df["category_nm"] = df["category_cd"].map(category_map).fillna("미분류")
         df["country_nm"] = df["country_cd"].map(country_map).fillna("기타")
-
-        # 요일 정보 (pandas 기본 값: 0=월요일, 6=일요일)
-        df["weekday_num"] = df["res_dt"].dt.dayofweek
-
-        weekday_map = {0: "월요일", 1: "화요일", 2: "수요일", 3: "목요일", 4: "금요일", 5: "토요일", 6: "일요일"}
-        df["weekday_nm"] = df["weekday_num"].map(weekday_map)
-        df["weekend_yn"] = df["weekday_num"].isin([5, 6])  # 토요일(5), 일요일(6)
-
-        # 주차 정보 (ISO 8601 기준)
-        df["week_of_year"] = df["res_dt"].dt.isocalendar().week.astype(np.int32)
 
         # 필수 데이터 필터링 (base_pr이 없는 레코드 제거)
         initial_count = len(df)
@@ -326,8 +278,8 @@ def transform_api1_raw_to_silver() -> None:
             logger.info(f"🧹 base_pr NA 제거: {removed_count:,}개 레코드 삭제")
         logger.info(f"✅ Enrichment 완료: {len(df):,}개 레코드")
 
-        # res_dt를 date 타입으로 변환 (시분초 없는 날짜만)
-        df["res_dt"] = df["res_dt"].dt.date
+        # 날짜 파생 컬럼 추가
+        df = add_date_features(df, "res_dt")
 
         return df[column_order]
 

@@ -113,15 +113,16 @@ def generate_api1_params() -> Iterator[Dict[str, Optional[str]]]:
     target_cls_codes = [code for code in product_cls_codes.keys() if code == "01"]  # noqa: SIM118
 
     # 지역 코드 + None (전체 지역)
-    target_country_codes = [*list(country_codes.keys()), None]
-    logger.debug(
+    target_country_codes = list(country_codes.keys()) + [None]  # noqa: RUF005
+    logger.info(
         f"API1 파라미터 생성: {len(target_cls_codes)} 분류 × {len(category_codes)} 카테고리 × {len(target_country_codes)} 지역"  # noqa: RUF001
     )
+    logger.info(f"target_country_codes: {target_country_codes}")
 
     for p_cls, category, country in product(
         target_cls_codes,
         category_codes,
-        country_codes,
+        target_country_codes,
     ):
         yield {
             "product_cls_code": p_cls,
