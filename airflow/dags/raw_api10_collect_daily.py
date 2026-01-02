@@ -24,7 +24,7 @@ API10_ACTION = "dailyCountyList"
 @dag(
     dag_id="raw_api10_collect_daily",
     description="KAMIS API10 지역별 소매 가격 데이터 수집",
-    schedule="0 2 * * *",  # KST 11:00
+    schedule=None,
     start_date=pendulum.datetime(2025, 12, 23),
     catchup=False,
     tags=["KAMIS", "api-10", "raw", "daily"],
