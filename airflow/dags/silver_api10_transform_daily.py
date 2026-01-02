@@ -11,13 +11,13 @@ from preprocessing import add_date_features, fix_cd_columns, normalize_price, pr
 
 
 @dag(
-    dag_id="silver_api10_transform",
+    dag_id="silver_api10_transform_daily",
     schedule=None,
     start_date=datetime(2025, 12, 1),
     catchup=False,
     tags=["preprocessing", "api10"],
 )
-def silver_api10_transform():
+def silver_api10_transform_daily():
     """
     Silver layer API10 데이터 처리 DAG 정의 함수.
 
@@ -262,4 +262,4 @@ def silver_api10_transform():
     upload(dfs_final)
 
 
-silver_api10_transform()
+silver_api10_transform_daily()
