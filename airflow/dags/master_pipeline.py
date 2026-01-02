@@ -1,8 +1,7 @@
 from datetime import datetime
 
-from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.decorators import dag
-
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
 
 # 공통 함수 정의
