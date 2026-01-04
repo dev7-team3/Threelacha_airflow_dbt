@@ -7,6 +7,7 @@ WITH region_product AS (
         pc.category_nm,
         pc.item_nm,
         pc.kind_nm,
+        pc.product_cls_unit,
 
         -- 지역 정보
         pc.country_nm,
@@ -14,6 +15,7 @@ WITH region_product AS (
         cc.longitude,
 
         -- 일자/가격 정보
+        pc.dt,
         pc.base_dt,
         pc.base_pr,
         pc.prev_1y_dt,

@@ -10,6 +10,7 @@ SELECT
     category_nm,
     item_nm,
     kind_nm,
+    product_cls_unit,
 
     -- 지역 정보
     country_nm,
@@ -17,6 +18,7 @@ SELECT
     longitude,
 
     -- 일자/가격 정보
+    dt,
     base_dt,
     base_pr,
     prev_1y_dt,
