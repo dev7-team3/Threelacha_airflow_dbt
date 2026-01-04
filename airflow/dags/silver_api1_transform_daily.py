@@ -1,5 +1,4 @@
 from datetime import datetime
-from io import BytesIO
 import json
 import logging
 import re
@@ -14,11 +13,13 @@ from metadata_loader_utils import MetadataLoader
 import pandas as pd
 import pendulum
 from preprocessing import add_date_features, clean_price
+from s3_uploader_utils import upload_parquet_to_s3
 
 logger = logging.getLogger("airflow.task")
 
 # 연결정보
 CONN_ID = get_storage_conn_id()
+SILVER_PREFIX = "silver/api-1"
 
 
 # 파일경로에서 메타데이터 추출
@@ -305,34 +306,16 @@ def transform_api1_raw_to_silver() -> None:
             return {"date": target_date, "record_count": 0, "status": "no_data"}
 
         logger.info(f"💾 Parquet 저장 시작: {len(df):,}개 레코드")
-
-        s3_hook = S3Hook(aws_conn_id=CONN_ID)
         dt_obj = datetime.strptime(target_date, "%Y-%m-%d")
 
         # 날짜별 개별 파일로 저장
-        path = f"silver/api-1/year={dt_obj.strftime('%Y')}/month={dt_obj.strftime('%m')}/"
+        path = f"{SILVER_PREFIX}/year={dt_obj.strftime('%Y')}/month={dt_obj.strftime('%m')}/"
         file_key = f"{path}data_{target_date.replace('-', '')}.parquet"
-
-        # Parquet를 메모리 버퍼에 저장
-        buffer = BytesIO()
-        df.to_parquet(buffer, engine="pyarrow", index=False)
-        buffer.seek(0)
-
-        s3_hook.load_bytes(bytes_data=buffer.getvalue(), key=file_key, bucket_name=BUCKET_NAME, replace=True)
-
-        logger.info(f"✅ Saved to: s3://{BUCKET_NAME}/{file_key}")
-        logger.info(f"   Records: {len(df):,}개")
-        logger.info("   Strategy: 날짜별 개별 파일 (다른 날짜 데이터 안전)")
-
-        # 샘플 데이터 로깅 - 기본 정보
-        sample_basic = df.head(3)[["res_dt", "week_of_year", "weekday_nm", "category_nm", "item_nm"]]
-        logger.info(f"\n📋 저장된 데이터 샘플 (기본 정보):\n{sample_basic.to_string()}")
-
-        # 샘플 데이터 로깅 - 가격 정보 (날짜 라벨 포함)
-        sample_price = df.head(3)[["item_nm", "base_dt", "base_pr", "prev_1d_dt", "prev_1d_pr"]]
-        logger.info(f"\n💰 저장된 데이터 샘플 (가격 정보):\n{sample_price.to_string()}")
-
-        return {"date": target_date, "record_count": len(df), "file_key": file_key, "status": "success"}
+        upload_parquet_to_s3(
+            df=df,
+            s3_key=file_key,
+        )
+        logger.info(f"✅ Silver transformation completed: {target_date} -> {file_key}")
 
     # --- DAG Flow ---
     # data_interval_start - 1일 = 전일 데이터 처리
