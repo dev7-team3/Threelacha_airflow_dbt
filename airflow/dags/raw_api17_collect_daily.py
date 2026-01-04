@@ -139,7 +139,7 @@ def upload_data_to_s3(
 @dag(
     dag_id="raw_api17_collect_daily",
     start_date=datetime(2025, 12, 10),
-    schedule="0 5 * * *",  # 매일 오전 5시
+    schedule=None,
     catchup=False,
     max_active_runs=1,
     default_args={
