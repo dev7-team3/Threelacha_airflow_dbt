@@ -357,6 +357,8 @@ services:
     platform: linux/amd64
     container_name: dbt
     restart: unless-stopped
+    ports: 
+      - "8001:8001"
     volumes:
       - ./dbt:/usr/app
       - ./dbt/logs:/usr/app/logs

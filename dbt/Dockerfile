@@ -13,6 +13,8 @@ RUN mkdir -p /root/.dbt
 
 WORKDIR /usr/app
 
+EXPOSE 8001
+
 # profiles.yml 심볼릭 링크 및 대기
 ENTRYPOINT ["/bin/bash", "-c"]
 CMD ["ln -sf /usr/app/profiles.yml /root/.dbt/profiles.yml && sleep infinity"]
