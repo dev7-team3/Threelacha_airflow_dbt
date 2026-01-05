@@ -4,6 +4,26 @@ fail_fast: true
 
 repos:
   # ==================================================
+  # Safety Guard: Secret & Merge Conflict Detection
+  # ==================================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      # ----------------------------------------------
+      # 1) Private Key / Secret Leak Prevention
+      # ----------------------------------------------
+      - id: detect-private-key
+        name: detect-private-key
+        stages: [commit]
+
+      # ----------------------------------------------
+      # 2) Merge Conflict Marker Detection
+      # ----------------------------------------------
+      - id: check-merge-conflict
+        name: check-merge-conflict
+        stages: [commit]
+
+  # ==================================================
   # Ruff: Lint + Format (Airflow 코드만)
   # ==================================================
   - repo: https://github.com/astral-sh/ruff-pre-commit
