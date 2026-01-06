@@ -153,7 +153,7 @@ def silver_api17_transform_daily():
         else:
             logical_date = logical_date.date()
 
-        target_date_obj = logical_date - timedelta(days=10)
+        target_date_obj = logical_date - timedelta(days=1)
         target_date = target_date_obj.strftime("%Y-%m-%d")
         year = logical_date.year
         month = logical_date.month
