@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'table',
     format = 'PARQUET',
-    location = 's3a://team3-batch/gold/mart_price_rise_top3/',
+    location = 's3://team3-batch/gold/mart_price_rise_top3/',
 ) }}
 
 SELECT
