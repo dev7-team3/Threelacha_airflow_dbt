@@ -21,6 +21,8 @@ Docker Compose 기반으로 구성되어 있으며, <strong>배치 데이터 파
 ## 🚀 설정 및 실행방법
 ### 1) Git Clone
 ```
+# repo 복사 위치 (CD 정책 고려) : /opt/Threelacha_airflow_dbt
+cd /opt
 git clone git@github.com:dev7-team3/Threelacha_airflow_dbt.git
 cd Threelacha_airflow_dbt
 ```
@@ -138,8 +140,8 @@ THREELACHA_AIRFLOW_DBT/
 - DAG import error 검증
 
 ### 📦 CD – main 브랜치 (EC2 자동 배포)
-**목적**:목적: 안정적인 무중단 배포 <br>
-배포 흐름:
+**목적**: 배포 실패를 대비한 안정적인 무중단 배포 <br>
+**배포 흐름**: 
 1. 기존 서비스 디렉토리 백업 (최근 3개 유지)
 2. rsync 기반 코드 동기화
 3. .env 주입
@@ -147,4 +149,5 @@ THREELACHA_AIRFLOW_DBT/
 5. 서비스 재기동
 6. Airflow Health Check
 7. 실패 시 자동 롤백
-> 배포 실패를 전제로 한 백업 + 자동 복구 설계가 핵심 특징
+> ⚠️ 본 배포 파이프라인은 GitHub-hosted runner가 아닌,
+> **EC2에 설치된 self-hosted GitHub Actions runner** 환경을 전제로 구성되어 있습니다.
