@@ -1,215 +1,150 @@
-# 🌾 Threelacha Airflow + dbt Data Pipeline
+# 🌾 THREELACHA – Airflow & dbt Operational Repository (EC2)
 
-농축수산물(KAMIS) 데이터를 수집·정제·분석하기 위한
-**Airflow + dbt 기반 운영형 데이터 파이프라인 프로젝트**입니다.
+본 레포지토리는 AWS EC2 환경에서 실제로 운영되는 Apache Airflow 및 dbt 서비스를 관리·배포하기 위한 운영용 레포지토리입니다.<br>
+Docker Compose 기반으로 구성되어 있으며, <strong>배치 데이터 파이프라인의 실행, 스케줄링, 검증, 배포 자동화(CI/CD)</strong>를 담당합니다.
 
-본 레포는 **팀 협업을 전제로 한 표준 개발 환경**을 제공하며,
-로컬 개발 → CI 검증 → CD 배포까지의 흐름이 자동화되어 있습니다.
-
----
-
-## 📌 Project Goals
-
-* 공공 API(KAMIS) 기반 데이터 수집 자동화
-* Airflow DAG 기반 배치 파이프라인 운영
-* dbt 기반 데이터 모델링 및 품질 검증
-* 실무 환경과 유사한 CI / CD / 코드 품질 관리 경험
+> ⚠️ 본 레포는 로컬 아키텍처 검증(PoC)용 레포가 아닌, 실제 데이터 파이프라인이 실행되는 운영 런타임 환경을 관리하는 레포입니다.
 
 ---
 
-## 🏗 Repository Structure
+## ✨ 주요 특징
 
+- EC2 기반 Apache Airflow Celery Executor 클러스터 운영
+- Airflow (Orchestration) 와 dbt (Transformation) 명확한 책임 분리<br>
+   (Airflow에서 dbt 트리거 가능)
+- DAG / Plugin / dbt 코드의 체계적인 관리
+- Health Checks 및 리소스 제한을 고려한 운영 설정
+- GitHub Actions 기반 CI (정적 검증) / CD (자동 배포 + 롤백)
+- 배포 실패 시 자동 백업 복원(Rollback) 지원
+
+---
+## 🚀 설정 및 실행방법
+### 1) Git Clone
 ```
-.
-├── airflow/
-│   ├── dags/                   # Airflow DAG 정의
-│   ├── plugins/                # 공통 유틸, 커스텀 로직
-│   └── logs/                   # (로컬/운영) 로그 디렉토리
-│
-├── dbt/
-├── Dockerfile                  # dbt 전용 Docker 이미지 정의 (dbt-athena 어댑터 설치) 
-│   ├── profiles.yml            # 운영용 dbt profile
-│   └── Threelacha/             # dbt project
-│       ├── models/
-│       ├── macros/
-│       ├── dbt_project.yml
-│       └── profiles.yml        # CI용 DuckDB profile
-│
-├── .github/
-│   ├── workflows/
-│   │   ├── ci.yml              # CI (Airflow + dbt)
-│   │   └── cd.yml              # CD (EC2 배포)
-│   ├── ISSUE_TEMPLATE/
-│   │   └── issue_template.md
-│   └── pull_request_template.md
-│
-├── pyproject.toml              # uv 기반 Python 환경 정의
-├── uv.lock                     # 의존성 lock file
-├── .pre-commit-config.yaml
-├── docker-compose.yaml
-└── README.md
-```
-
----
-
-## ⚙️ Development Environment
-
-### Python & Dependency Management
-
-* **Python 3.11**
-* **uv** 사용 (pip / venv 대체)
-* 의존성은 `pyproject.toml` + `uv.lock`으로 고정
-
-### Code Quality
-
-* **ruff**: lint + formatter
-* **pre-commit**: 커밋 시 자동 검사
-
----
-
-## 🚀 Quick Start (팀원 기준)
-
-### 1️⃣ 레포 클론
-
-```bash
-git clone https://github.com/<org>/Threelacha_airflow_dbt.git
+git clone git@github.com:dev7-team3/Threelacha_airflow_dbt.git
 cd Threelacha_airflow_dbt
 ```
-
-### 2️⃣ uv 설치
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
+### 2) 환경 변수 설정
+```.env.example``` 파일을 복사하여 ```.env``` 파일을 생성합니다.
 ```
-
-### 3️⃣ Python & 의존성 설치
-
-```bash
-uv python install 3.11
-uv sync
+cp .env.example .env
 ```
+- 필요에 따라 ```.env``` 파일의 아래 항목들을 환경에 맞게 수정합니다.
+- ```CERT_KEY``` ,  ```CERT_ID```, ```AWS_ACCESS_KEY_ID```, ```AWS_SECRET_ACCESS_KEY```, ```AWS_DEFAULT_REGION``` 항목은 반드시 본인 발급 정보에 맞게 변경하여야 합니다. 
+- 그 외 항목은 변경하지 않아도 ```docker-compse.yaml``` 설정된 기본값으로 실행가능합니다.
+```
+# 변경 불가 항목
+AIRFLOW_ENV=aws
 
-> ⚠️ 반드시 `uv.lock` 기준으로 설치됩니다
+# 필수 변경 항목
+# ---------------------------------------------------------
+# KAMIS Open API 인증 정보
+# ---------------------------------------------------------
+CERT_KEY=<YOUR_KAMIS_API_KEY>
+CERT_ID=<YOUR_KAMIS_API_ID>
 
+# ---------------------------------------------------------
+# AWS 연결 정보 등록
+# ---------------------------------------------------------
+AWS_ACCESS_KEY_ID=<YOUR_AWS_ACCESS_KEY_ID>
+AWS_SECRET_ACCESS_KEY=<YOUR_AWS_SECRET_ACCESS_KEY>
+AWS_DEFAULT_REGION=<YOUR_AWS_DEFAULT_REGION>
+```
+### 3) Docker Compose 실행
+```
+docker compose up -d
+```
+### 4) 기동 서비스 상태 확인
+```
+docker compose ps
+docker compose logs airflow-scheduler
+```
 ---
 
-## 🧪 Local Validation
-
-### Airflow DB 초기화
-
-```bash
-uv run airflow db migrate
-```
-
-### Airflow DAG 검증
-
-```bash
-uv run airflow dags list
-uv run airflow dags list-import-errors
-```
-
-### dbt 컴파일 (CI와 동일 조건)
-
-```bash
-uv run dbt compile \
-  --project-dir dbt/Threelacha \
-  --profiles-dir dbt/Threelacha
-```
-
----
-
-## 🔍 Pre-commit (자동 코드 검사)
-
-### 최초 1회 설정
-
-```bash
-uv run pre-commit install
-```
-
-### 수동 실행
-
-```bash
-uv run pre-commit run --all-files
-```
-
-✔️ 커밋 시 자동으로 실행되며
-✔️ lint / format 문제는 커밋이 차단됩니다
-
----
-
-## 🤖 CI Pipeline (자동)
-
-### 트리거
-
-* `dev` 브랜치 push
-* `main` / `dev` 대상 Pull Request
-
-### 검증 항목
-
-* ruff lint / format
-* Airflow DAG import & serialization
-* dbt compile / parse (DuckDB)
-
-❌ CI 실패 시 PR merge 불가
-
----
-
-## 🚢 CD Pipeline (운영 배포)
-
-### 트리거
-
-* `main` 브랜치 merge
-
-### 동작
-
-1. EC2 self-hosted runner 실행
-2. 기존 서비스 백업
-3. 코드 동기화
-4. Docker Compose 재기동
-5. Airflow 헬스체크
-6. 실패 시 자동 롤백
-
-> ⚠️ CD 실패해도 **기존 서비스는 유지됩니다**
-
----
-
-## 🔐 Branch Ruleset
-
-* `main` 브랜치 보호
-* CI 필수 통과
-* 최신 dev 기준 merge 강제
-
----
-
-## 📝 Issue / PR Guidelines
-
-* Issue / PR 생성 시 자동 템플릿 적용
-* 작업 목적, 변경 내용, 영향 범위를 명확히 작성
-
----
-
-## 👥 Team Workflow Summary
+## ⚙️ Service Composition
 
 ```
-dev 브랜치 작업
-   ↓
-PR 생성 → CI 자동 검증
-   ↓
-CI 통과 후 merge
-   ↓
-main merge → CD 자동 배포
+EC2 Instance
+ ├── Airflow API Server
+ ├── Airflow Scheduler
+ ├── Airflow Workers (Celery)
+ ├── Airflow Triggerer 
+ ├── Airflow Dag Processor
+ ├── PostgreSQL (Metadata DB)
+ ├── Redis (Celery Broker)
+ └── dbt Container
 ```
 
 ---
 
-## 📎 Notes
+## 🔗 데이터 파이프라인
 
-* 운영 환경 변수는 EC2 내 `/home/ubuntu/.env`에서 관리
-* dbt CI는 DuckDB profile을 사용 (AWS 연결 없음)
-* 실 데이터 적재는 운영 환경에서만 수행
+<p align="center">
+    <img src="./images/data_pipeline.png" width=800>
+</p>
+
+#### DAG간 의존성 제어
+- `TriggerDagRunOperator` 기반의 `Master Pipeline`라는 상위 오케스트레이션 DAG를 통해 전체 데이터 흐름을 통합적으로 제어하도록 설계
+- 이를 통해 사용자는 개별 수집·변환 DAG을 각각 스케줄링하여 실행할 필요 없이, Master DAG 하나만 실행함으로써 전체 데이터 흐름을 일관되게 관리
+- 파이프라인의 실행 순서와 데이터 정합성을 보장하면서도, 유지보수성과 확장성을 고려한 안정적인 배치 처리 구조를 구축
 
 ---
 
-## ✨ Maintainers
+## 📁 디렉토리 구조
 
-* Threelacha Data Engineering Team
+```
+THREELACHA_AIRFLOW_DBT/
+├── .github/                        # GitHub 관리 설정
+│   ├── ISSUE_TEMPLATE/             # 이슈 템플릿
+│   └── workflows/
+│       ├── ci.yml                  # CI (lint, test 등)
+│       └── cd.yml                  # CD (EC2 배포 자동화)
+│
+├── airflow/ 
+│   ├── dags/                       # Airflow DAG 파일 저장소
+│   │   └── sql/                    # DAG에서 사용하는 SQL 스크립트
+│   ├── logs/                       # Airflow 실행 로그
+│   ├── plugins/                    # Airflow 커스텀 플러그인
+│   │   ├── config/                 # DAG에서 공통으로 사용하는 설정 정보 정의
+│   │   └── metadata/               # 메타데이터 파일 저장소
+│   └── config/                     # airflow.cfg 및 설정 파일
+│
+├── dbt/
+│   ├── Threelacha/                 # 메인 dbt 프로젝트
+│   │   ├── models/                 # dbt models (Gold)
+│   │   ├── macros/                 # Custom dbt macros
+│   │   ├── seeds/                  # Seed data
+│   │   ├── tests/                  # dbt tests
+│   │   ├── logs/                   # dbt 실행 로그
+│   │   └── dbt_project.yml         # dbt 프로젝트 설정
+│   ├── profiles.yml                # Athena / RDS 연결 설정
+│   └── Dockerfile                  # [Build] dbt 커스텀 이미지 (Athena adapter 설치)
+│
+├── docker-compose.yaml             # EC2 Airflow + dbt 서비스 구성
+├── .env.example                    # 환경 변수 템플릿
+├── pyproject.toml                  # 프로젝트 메타데이터 및 의존성 정의
+├── uv.lock                         # 패키지 버전 고정 파일 (uv)
+├── .pre-commit-config.yaml         # 코드 스타일 및 린트 설정
+└── README.md
+```
+---
+
+## 🔄 CI/CD Pipeline
+### ✅ CI – Pull Request / dev 브랜치
+**목적**: 코드 품질 및 DAG 안정성 검증
+- Ruff lint / format check
+- Airflow DB 초기화 (SQLite)
+- DAG reserialize
+- DAG import error 검증
+
+### 📦 CD – main 브랜치 (EC2 자동 배포)
+**목적**:목적: 안정적인 무중단 배포 <br>
+배포 흐름:
+1. 기존 서비스 디렉토리 백업 (최근 3개 유지)
+2. rsync 기반 코드 동기화
+3. .env 주입
+4. Docker Compose 설정 검증
+5. 서비스 재기동
+6. Airflow Health Check
+7. 실패 시 자동 롤백
+> 배포 실패를 전제로 한 백업 + 자동 복구 설계가 핵심 특징
