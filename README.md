@@ -61,6 +61,15 @@ docker compose up -d
 docker compose ps
 docker compose logs airflow-scheduler
 ```
+### 5) Airflow 커넥션 정보 등록
+1. Airflow Web UI 접속  
+   - `http://<EC2_HOST>:8080`
+2. 좌측 메뉴 **관리자(Admin) → 커넥션(Connections)** 선택
+3. 파이프라인 실행에 필요한 외부 서비스 Connection 정보 등록  
+   - S3 (Object Storage)  
+   - Athena (Query Engine)  
+   - RDS (Metadata / Application DB)
+   - 상세 설정: [Airflow Connection 설정 문서](./docs/airflow_connections.md)
 ---
 
 ## ⚙️ Service Composition
@@ -82,7 +91,7 @@ EC2 Instance
 ## 🔗 데이터 파이프라인
 
 <p align="center">
-    <img src="./images/data_pipeline.png" width=800>
+    <img src="./docs/images/data_pipeline.png" width=800>
 </p>
 
 #### DAG간 의존성 제어
