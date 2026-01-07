@@ -1,4 +1,4 @@
-# 🌾 THREELACHA – Airflow & dbt Operational Repository (EC2)
+# 🍊 Airflow & dbt Operational Repository (EC2)
 
 본 레포지토리는 AWS EC2 환경에서 실제로 운영되는 Apache Airflow 및 dbt 서비스를 관리·배포하기 위한 운영용 레포지토리입니다.<br>
 Docker Compose 기반으로 구성되어 있으며, <strong>배치 데이터 파이프라인의 실행, 스케줄링, 검증, 배포 자동화(CI/CD)</strong>를 담당합니다.
