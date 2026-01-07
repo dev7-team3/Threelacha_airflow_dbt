@@ -1,9 +1,9 @@
 # 🍊 Airflow & dbt Operational Repository (EC2)
 
-본 레포지토리는 AWS EC2 환경에서 실제로 운영되는 Apache Airflow 및 dbt 서비스를 관리·배포하기 위한 운영용 레포지토리입니다.<br>
+본 레포지토리는 AWS EC2 환경에서 실제로 운영되는 Apache Airflow 및 dbt 서비스를 관리·배포하기 위한 운영용 레포지토리입니다.<br> 
 Docker Compose 기반으로 구성되어 있으며, <strong>배치 데이터 파이프라인의 실행, 스케줄링, 검증, 배포 자동화(CI/CD)</strong>를 담당합니다.
 
-> ⚠️ 본 레포는 로컬 아키텍처 검증(PoC)용 레포가 아닌, 실제 데이터 파이프라인이 실행되는 운영 런타임 환경을 관리하는 레포입니다.
+> ⚠️ 로컬 아키텍처 검증(PoC)용 레포가 아닌, 실제 데이터 파이프라인이 실행되는 운영 런타임 환경을 관리하는 레포입니다.
 
 ---
 
@@ -94,8 +94,8 @@ EC2 Instance
     <img src="./docs/images/data_pipeline.png" width=800>
 </p>
 
-#### DAG간 의존성 제어
-- `TriggerDagRunOperator` 기반의 `Master Pipeline`라는 상위 오케스트레이션 DAG를 통해 전체 데이터 흐름을 통합적으로 제어하도록 설계
+#### DAG간 의존성 제어 `Master Pipeline`
+- `TriggerDagRunOperator` 기반의 상위 오케스트레이션 DAG를 통해 전체 데이터 흐름을 통합적으로 제어하도록 설계
 - 이를 통해 사용자는 개별 수집·변환 DAG을 각각 스케줄링하여 실행할 필요 없이, Master DAG 하나만 실행함으로써 전체 데이터 흐름을 일관되게 관리
 - 파이프라인의 실행 순서와 데이터 정합성을 보장하면서도, 유지보수성과 확장성을 고려한 안정적인 배치 처리 구조를 구축
 
