@@ -46,10 +46,8 @@ CERT_KEY=<YOUR_KAMIS_API_KEY>
 CERT_ID=<YOUR_KAMIS_API_ID>
 
 # ---------------------------------------------------------
-# AWS 연결 정보 등록
+# AWS 연결 정보 등록 (REGION 정보만 필요)
 # ---------------------------------------------------------
-AWS_ACCESS_KEY_ID=<YOUR_AWS_ACCESS_KEY_ID>
-AWS_SECRET_ACCESS_KEY=<YOUR_AWS_SECRET_ACCESS_KEY>
 AWS_DEFAULT_REGION=<YOUR_AWS_DEFAULT_REGION>
 ```
 ### 3) Docker Compose 실행
@@ -89,12 +87,16 @@ EC2 Instance
 ---
 
 ## 🔗 데이터 파이프라인
+#### 🔑 Key Point: [데이터 파이프라인 단계별 상세 정의](https://github.com/dev7-team3/Threelacha_docs/blob/main/%EB%B3%B4%EA%B3%A0%EC%84%9C/%EC%83%81%EC%84%B8%EB%82%B4%EC%9A%A9/details_of_data_pipelines.md)
+
+- 농축수산물 가격 API 데이터를 기반으로, 수집 → 정제 → 분석 → 대시보드까지의 전 과정을 자동화하는 배치 처리 구조로 설계
+
 
 <p align="center">
     <img src="./docs/images/data_pipeline.png" width=800>
 </p>
 
-#### DAG간 의존성 제어 `Master Pipeline`
+#### 🔑 Key Point: DAG간 의존성 제어 `Master Pipeline`
 - `TriggerDagRunOperator` 기반의 상위 오케스트레이션 DAG를 통해 전체 데이터 흐름을 통합적으로 제어하도록 설계
 - 이를 통해 사용자는 개별 수집·변환 DAG을 각각 스케줄링하여 실행할 필요 없이, Master DAG 하나만 실행함으로써 전체 데이터 흐름을 일관되게 관리
 - 파이프라인의 실행 순서와 데이터 정합성을 보장하면서도, 유지보수성과 확장성을 고려한 안정적인 배치 처리 구조를 구축
