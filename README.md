@@ -46,7 +46,7 @@ CERT_KEY=<YOUR_KAMIS_API_KEY>
 CERT_ID=<YOUR_KAMIS_API_ID>
 
 # ---------------------------------------------------------
-# AWS 연결 정보 등록
+# AWS 연결 정보 등록 (REGION 정보만 필요)
 # ---------------------------------------------------------
 AWS_DEFAULT_REGION=<YOUR_AWS_DEFAULT_REGION>
 ```
