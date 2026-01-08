@@ -48,8 +48,6 @@ CERT_ID=<YOUR_KAMIS_API_ID>
 # ---------------------------------------------------------
 # AWS 연결 정보 등록
 # ---------------------------------------------------------
-AWS_ACCESS_KEY_ID=<YOUR_AWS_ACCESS_KEY_ID>
-AWS_SECRET_ACCESS_KEY=<YOUR_AWS_SECRET_ACCESS_KEY>
 AWS_DEFAULT_REGION=<YOUR_AWS_DEFAULT_REGION>
 ```
 ### 3) Docker Compose 실행
