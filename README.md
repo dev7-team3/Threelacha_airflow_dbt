@@ -91,10 +91,7 @@ EC2 Instance
 ## 🔗 데이터 파이프라인
 #### 🔑 Key Point: 데이터 파이프라인 단계별 상세 정의 : [(상세내용) 데이터 파이프라인 단계별 상세 정의](https://github.com/dev7-team3/Threelacha_docs/blob/main/%EB%B3%B4%EA%B3%A0%EC%84%9C/%EC%83%81%EC%84%B8%EB%82%B4%EC%9A%A9/details_of_data_pipelines.md)
 
-
-> 💡 농축수산물 가격 API 데이터를 기반으로, 수집 → 정제 → 분석 → 대시보드까지의 전 과정을 자동화하는 배치 처리 구조로 설계
-> 
-
+- 농축수산물 가격 API 데이터를 기반으로, 수집 → 정제 → 분석 → 대시보드까지의 전 과정을 자동화하는 배치 처리 구조로 설계
 
 <p align="center">
     <img src="./docs/images/data_pipeline.png" width=800>
